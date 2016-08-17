@@ -21,9 +21,12 @@ B-3000 Leuven, Belgium
 
 Mail: [koen.herten@kuleuven.be](mailto:koen.herten@kuleuven.be "")
 
-##Licence
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+##License
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) This work is licensed under GPL v3. A copy of the license is included
 
 ##Citing
+
+Koen Herten. (2016). pika: pika 16.08. Zenodo. 10.5281/zenodo.60342
+
 [![DOI](https://zenodo.org/badge/23912/GenomicsCoreLeuven/pika.svg)](https://zenodo.org/badge/latestdoi/23912/GenomicsCoreLeuven/pika)
 
