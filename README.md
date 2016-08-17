@@ -11,6 +11,21 @@ The main script is found in the source directory. Just execute the pika.sh file.
 
 ##Download
 The code of pika is found in the source directory. All scripts/jobs (pbs) are found in the scripts directory, divided into subfolders according to type. All pipelines are summed into the pipeline directory. The script uses this structure, but when a script or pipeline is added (as a file), it is added in the tool.
+###Release Download
+The releases can be downloaded in the release tab. Just unpack the download, and the tool is ready to use.
+###Git clone
+On the vsc:
+```bash
+source switch_to_2015a
+module load git/2.9.2-intel-2015a
+git clone https://github.com/GenomicsCoreLeuven/pika.git
+#when the clone is ready, the executable is found in source/pike.sh
+
+#to update your current version use:
+source switch_to_2015a
+module load git/2.9.2-intel-2015a
+git pull
+```
 
 ## Contact
 [Genomics Core](http://www.genomicscore.be "Genomics Core website")  
