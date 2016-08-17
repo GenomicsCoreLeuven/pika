@@ -21,5 +21,5 @@ B-3000 Leuven, Belgium
 Mail: [koen.herten@kuleuven.be](mailto:koen.herten@kuleuven.be "")
 
 ##Citing
-Comming soon
+[![DOI](https://zenodo.org/badge/23912/GenomicsCoreLeuven/pika.svg)](https://zenodo.org/badge/latestdoi/23912/GenomicsCoreLeuven/pika)
 
