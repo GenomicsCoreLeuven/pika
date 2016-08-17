@@ -1,0 +1,75 @@
+#!/bin/bash -l
+#PBS -l walltime=6:00:00
+#PBS -l mem=30gb
+#PBS -l nodes=1:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N trimmomatic
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This is a worker script: it uses SAMPLE and THREADS parameters
+##[HELP] This tool will trim adaptors from the reads in normal mode, or poly in rna mode (for quantseq)
+##[HELP] This script can run multithreaded
+##[HELP] This scripts runtime is limited
+##
+##[HOWTO] #trimmomatic
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
+##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch trimmomatic.pbs -data samples.txt -threaded 20
+#loading the modules
+module use /staging/leuven/stg_00019/software/modulefiles
+module load trimmomatic/0.36-Java1.8.0_77;
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/fastq";
+OUTPUT_DIR="$PROJECT_DIR/trimmomatic";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+IS_RNA="no";
+
+if [ "$IS_RNA" == "no" ];
+then
+	ILLUMINACLIP="ILLUMINACLIP:/staging/leuven/stg_00019/genome/adapters/trimmomatic/TruSeq3-PE.fa:2:30:10:8:keepBothReads";
+else
+	ILLUMINACLIP="ILLUMINACLIP:/staging/leuven/stg_00019/genome/adapters/rna_polyA/adapter_polyA.fa:2:7:7 MINLEN:20 HEADCROP:10";
+fi 
+
+#the actual script
+mkdir -p $SCRATCH_DIR/$SAMPLE;
+cd $SCRATCH_DIR/$SAMPLE;
+
+rsync -ahr $SAMPLE_DIR/$SAMPLE* .;
+
+
+if [ -f $SAMPLE.R2.fastq ];
+then
+	#paired end
+	MODE="PE";
+        FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.R2.fastq.gz";
+	OUTPUT="$SCRATCH_DIR/$SAMPLE/$SAMPLE.paired.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.unpaired.forward.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.paired.R2.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.unpaired.reverse.R1.fastq.gz";
+else
+	#single read
+	MODE="SE";
+	FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz";
+	OUTPUT="$SCRATCH_DIR/$SAMPLE/$SAMPLE.paired.R1.fastq.gz";
+fi
+
+trimmomatic $MODE -threads $THREADS -phred64 $FASTQ_FILES $OUTPUT $ILLUMINACLIP > $SCRATCH_DIR/$SAMPLE/$SAMPLE.log 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.log;
+
+
+rm $SAMPLE.R?.fastq.gz;
+mv $SAMPLE.paired.R1.fastq.gz $SAMPLE.R1.fastq.gz;
+if [ -f $SAMPLE.paired.R2.fastq.gz ];
+then
+	mv $SAMPLE.paired.R2.fastq.gz $SAMPLE.R2.fastq.gz;
+fi
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $SCRATCH_DIR/$SAMPLE/* .;
+
+rm -r $SCRATCH_DIR/$SAMPLE;
+
+

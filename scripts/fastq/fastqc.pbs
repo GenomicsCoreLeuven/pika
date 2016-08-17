@@ -1,0 +1,37 @@
+#!/bin/bash -l
+#PBS -l walltime=20:00:00
+#PBS -l mem=30gb
+#PBS -l nodes=1:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N fastqc
+#PBS -A default_project
+##[VERSION] pika 16.08 
+##[HELP] This tool will create a qc report of the fastq files
+##[HELP] This script is multithreaded
+##[HELP] This script runs between 1 and 10 minutes per fastq file
+##
+##[HOWTO] #FASTQC
+##[HOWTO] #start the module:
+##[HOWTO] qsub fastqc.pbs
+#loading the modules
+source switch_to_2015a
+module load FastQC/0.11.5-Java-1.8.0_77
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+SCRATCH_DIR="$VSC_SCRATCH";
+OUTPUT_DIR="$PROJECT_DIR/fastqc";
+
+#the actual script
+mkdir $OUTPUT_DIR;
+cd $RUN_DIR/$RUN;
+for i in `ls -1 -d *.fastq.gz`;
+do
+	files="$files $i";
+done
+
+fastqc -o $OUTPUT_DIR -t 20 -d $SCRATCH_DIR $files;
+
+

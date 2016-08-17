@@ -1,0 +1,42 @@
+#!/bin/bash -l
+#PBS -l walltime=12:00:00
+#PBS -l mem=20gb
+#PBS -l nodes=1:ppn=1
+#PBS -M MAIL 
+#PBS -m eab
+#PBS -N bowtie_index
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This tool will create the needed indexes for bowtie mapping
+##[HELP] This script will use only one cpu
+##[HELP] This script has a long runtime (multiple houres)
+##
+##[HOWTO] #Bowtie index
+##[HOWTO] #the genome directory in this script has to be changed
+##[HOWTO] #the fasta file needs to be named genome.fa
+##[HOWTO] #start the module:
+##[HOWTO] qsub bowtie_source.pbs
+#loading the modules
+module use /apps/leuven/thinking/2015a/modules/all 
+source switch_to_2015a
+module load Bowtie2/2.2.4-intel-2015a
+
+#setting all parameters (these could be changed)
+GENOME_DIR="";
+
+#the actual script
+cd $VSC_SCRATCH_NODE;
+mkdir bowtie;
+rsync -ahrL $GENOME_DIR/genome.fa .;
+
+#creating index
+bowtie2-build $VSC_SCRATCH_NODE/genome.fa $VSC_SCRATCH_NODE/bowtie/genome;
+
+cd $GENOME_DIR;
+mkdir -p bowtie2/2.2.4;
+cd bowtie2/2.2.4;
+rsync -ahr $VSC_SCRATCH_NODE/bowtie/* .;
+cd ..;
+chmod 555 -R 2.2.4;
+
+rm -rf $VSC_SCRATCH_NODE/bowtie;

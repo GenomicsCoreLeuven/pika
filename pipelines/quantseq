@@ -1,0 +1,45 @@
+#Quantseq pipeline
+
+##[HELP] The Quantseq Differential Expression pipeline
+##[HELP] =============================================
+##[HELP] 
+##[HELP] The pipeline starts from multiple samples. Samples should be single reads.
+##[HELP] Samples are trimmed for the possible polyA's.
+##[HELP] Optional fastq is available.
+##[HELP] Bowtie is used for mapping the samples to the reference genome
+##[HELP] Htseq count is used to count the reads per feature (gene/transcript/...)
+##[HELP] DE is done using DESeq and EdgeR
+
+##[HOWTO] #This script describes how to execute the quantseq DE pipeline.
+##[HOWTO] #After the copy, a file will be generated with this info, together with the standard help.
+##[HOWTO] #Further more the generated file will contain all commands needed to launch the scripts on the HPC.
+##[HOWTO] #Together with short one line commands to generate needed files, and check temperary results.
+
+##[JOB] trimmomatic
+##[CHANGE] trimmomatic	sed "s:IS_RNA=\"no\":IS_RNA=\"yes\":" 
+
+##[JOB] fastqc
+##[CHANGE] fastqc	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/fastq_join\":"
+
+##[JOB] bowtie_mapping_population
+##[CHANGE] bowtie_mapping_population	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/trimmomatic\":"
+##[CHANGE] bowtie_mapping_population	sed "s:BOWTIE_OPTIONS=\"--local\":BOWTIE_OPTIONS=\"--end-to-end\":"
+
+# once for the strict counts (both htseq jobs can run simultanious)
+##[JOB] htseq
+
+# once for the flexible counts (both htseq jobs can run simultanious)
+##[JOB] htseq
+##[CHANGE] htseq	sed "s:STRICT=\"yes\":STRICT=\"no\":"
+
+# After the htseq jobs are finished, a summary can be created with this one-liner:
+for i in `cat samples.txt | grep -v SAMPLE | sed 's/,20//g'`; do echo $i; grep 'Input' ../trimmomatic/$i.log | awk '{split($0, arr, " "); print "Total reads: "arr[3]; print "Kept after trimming: "arr[5]}'; tail -n 3 ../mapped_trim_end/$i.bowtie2.log | awk '{if($0~"exactly"){print "Uniquely mapped: " $1;}else{print "Multi-mapping: "$1;}}' | head -n 2; head -n -5 ../htseq/$i.htseq_a0_genes_strand_intersectionNonempty.counts | awk '{sum+=$2}END{print "Flexible usable: "sum;}'; head -n -5 ../htseq/$i.htseq_a10_genes_nostrand_union.counts | awk '{sum+=$2}END{print "Strict usable: "sum;}'; done | awk 'BEGIN{print "SAMPLE\tTotal Reads\tKept after Trimming\tMapped Unique\tMultiMapping\tUseable For DE (flexible)\tUseable For DE (strict)"}{if(NR%7==1){if(line != ""){print line;} line=$1;}else{split($0,arr,":"); line=line"\t"arr[2]}}END{print line;}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR==1){$8=$7; $7=$6; $6="Total Mapped"}else{$8=$7; $7=$6; $6=$4+$5;} print $0}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR!=1){for(i=3;i<=NF;i++){$i=$i" ("($i/$2*100)"%)";}} print $0;}' > summary.tsv
+# To view it efficiently: (exit pressing q)
+cat summary.tsv | column -ts $'\t' | less -#2 -N -S -R
+
+# You need to create the conditions.txt file for both the deseq as the edger steps.
+
+##[JOB] deseq
+
+##[JOB] edger
+

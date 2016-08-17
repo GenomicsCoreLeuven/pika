@@ -1,0 +1,48 @@
+#!/bin/bash -l
+#PBS -l walltime=6:00:00:00
+#PBS -l mem=240gb
+#PBS -l nodes=1:ppn=10
+#PBS -M MAIL
+#PBS -N canu_correct
+#PBS -A default_project
+#PBS -l partition=smp1
+##[VERSION] pika 16.08 
+##[HELP] This tool will correct pacbio data using canu
+##[HELP] This script is multithreaded
+##[HELP] Runtime of this script is not predicted yet
+##
+##[HOWTO] #CANU
+##[HOWTO] #The parameters in this script has to be edited before ran
+##[HOWTO] #start the module:
+##[HOWTO] qsub canu_correct.pbs
+#loading the modules
+module use /apps/leuven/thinking/2015a/modules/all 
+module load canu/1.0-GCC-4.9.2
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/canu";
+SAMPLE="";
+#this needs to be changed: example 1.1g 4.3m ...
+GENOME_SIZE="1.1g";
+SCRATCH_DIR="$VSC_SCRATCH_NODE/canu_$SAMPLE";
+MAX_MEM="240";
+MAX_THREADS="10";
+#uncommand for low coverage settings:
+#best is to try different errorRates, examples on the website are 0.035, 0.025, 0.013
+EXTRA_SETTINGS="";
+#EXTRA_SETTINGS="corMinCoverage=2 errorRate=0.035 minOverlapLength=499 corMaxEvidenceErate=0.3";
+
+#the actual script
+mkdir -p $SCRATCH_DIR;
+cd $SCRATCH_DIR;
+rsync -ahrL $SAMPLE_DIR/$SAMPLE.fastq.gz pacbio.fastq.gz;
+
+#running CANU
+canu -correct -p $SAMPLE -d $SCRATCH_DIR genomeSize=$GENOME_SIZE usegrid=0 maxMemory=$MAX_MEM maxThreads=$MAX_THREADS $EXTRA_SETTINGS -pacbio-raw $SCRATCH_DIR/pacbio.fastq.gz;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahrL $SCRATCH_DIR/* .;
+

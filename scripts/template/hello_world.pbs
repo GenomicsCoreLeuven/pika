@@ -1,0 +1,39 @@
+#!/bin/bash -l
+#PBS -l walltime=12:00:00
+#PBS -l mem=50gb
+#PBS -l nodes=1:ppn=20
+#PBS -M MAIL
+#PBS -m aeb
+#PBS -N hello_world
+#PBS -A default_project
+##[VERSION] pika dev [here comes the version of pika where the last changes are made, pika dev for the development fase]
+##[HELP] This is the help of the script. Here comes some information for the user on the script.
+##[HELP] Usually something about the parameters that can be changed inside the script, or about the runtime
+##[HELP] If you use this as a templete, do not forget to change the -N option in #PBS to the name of the script
+##
+##[HOWTO] #Here follows the howto. The comment lines should start with #, as the executable lines should start without (like in a bash or sh script).
+##[HOWTO] #Usually there are comments like which module should be loaded before (worker module and version), which data file the worker needs, ...
+##[HOWTO] #If no worker script is needed, like here only the qsub command is needed:
+##[HOWTO] qsub hello_world.pbs
+##[HOWTO] #Note that the executable line does not start with #, also in the pipelines and in the tool the ##[HOWTO] will be trimmed.
+
+#loading the modules
+##here all needed modules will be loaded, handy on 1 place, easy to find the used versions
+
+#setting all parameters (these could be changed)
+##here different parameters are set. In the copy of the tool, PROJECT_DIR and GENOME_DIR are automatically changed.
+##SAMPLE_DIR and OUTPUT_DIR can be changed in the pipeline, together with other parameters. It is a good practice to make an environment variable for every possible tool (so that users can edit tool parameters, without having to surf through the code)
+##new parameters are prefereble to have self-explainable names.
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/input";
+OUTPUT_DIR="$PROJECT_DIR/output";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+
+#the actual script
+##here the actual code of the script is written. There are no limitations to the code itself, as long as it is well documented in the help, howto, and parameters.
+mkdir -p $SCRATCH_DIR;
+echo "Hello world" > hello_world.txt;
+#here the scratch directory is created, and hello_world is written into a file.
+
+

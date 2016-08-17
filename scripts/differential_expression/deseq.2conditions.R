@@ -1,0 +1,113 @@
+library("DESeq")
+library("RColorBrewer")
+library("gplots")
+library("vsn")
+#prepare the data
+args = commandArgs(trailingOnly = TRUE)
+condition1 <- args[1]
+condition2 <- args[2]
+print(paste("--R--DESeq-- Condition ", condition1, " vs ", condition2))
+print("--R--DESeq-- Loading samples")
+all_samples = read.csv("samples.csv")
+samples = subset(all_samples, condition %in% c(condition1, condition2))
+samplesDESeq = with(samples, data.frame(shortname = I(shortname), countf = I(countf), condition = condition, LibraryLayout = LibraryLayout))
+cds = newCountDataSetFromHTSeqCount(samplesDESeq)
+print("--R--DESeq-- Estimate Size Factors")
+cds = estimateSizeFactors(cds)
+write.csv(sizeFactors(cds), paste(condition1, "_vs_", condition2, ".sizeFactors.csv", sep = ""))
+write.csv(counts(cds, normalized=FALSE), paste(condition1, "_vs_", condition2, ".absolute_counts.csv", sep = ""))
+write.csv(counts(cds, normalized=TRUE), paste(condition1, "_vs_", condition2, ".normalized_counts.csv", sep = ""))
+print("--R--DESeq-- Estimate Dispersions")
+cdsB = estimateDispersions(cds, method = "blind")
+print("--R--DESeq-- Variance Stabilizing Transformation")
+vsd = varianceStabilizingTransformation(cdsB)
+#create pca plot for sample distances
+print("--R--DESeq-- Create PCA Plot")
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".PCA_plot.eps", sep = ""))
+plotPCA(vsd, intgroup =c("condition"))
+dev.off()
+#create heatmap for first 30 different genes
+print("--R--DESeq-- Create top 30 genes heatmap")
+hmcol = colorRampPalette(brewer.pal(9, "GnBu"))(100)
+select = order(rowMeans(counts(cds)), decreasing = TRUE)[1:30]
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".heatmap_top_30_genes.eps", sep = ""))
+heatmap.2(exprs(vsd)[select,], col = hmcol, trace = "none", margin=c(10,6))
+dev.off()
+#create heatmap of sample to sample distances
+print("--R--DESeq-- Calculate sample to sample distances")
+dists = dist(t(exprs(vsd)))
+mat = as.matrix(dists)
+rownames(mat) = colnames (mat) = with(pData(cdsB), rownames(pData(cdsB)))
+print("--R--DESeq-- Plot sample to sample distances")
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".heatmap_sample_to_sample_distances.eps", sep = ""))
+heatmap.2(mat, col = hmcol, trace = "none", margin=c(10,6))
+dev.off()
+print("--R--DESeq-- Plot Dispersion per est")
+cds = estimateDispersions(cds)
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".dispersion_values_against_normalised_means.eps", sep = ""))
+plotDispEsts(cds)
+dev.off()
+
+print("--R--DESeq-- Calling differential expression")
+res = nbinomTest(cds, condition1, condition2)
+print("--R--DESeq-- Plot MA: normalised mean vs log2 fold change")
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".MA.normalised_mean_vs_log2_fold_change.eps", sep = ""))
+plotMA(res)
+dev.off()
+print("--R--DESeq-- Plot p-values histogram")
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".p-values_histogram.eps", sep = ""))
+hist(res$pval, breaks=100, col="skyblue", border="slateblue", main=paste(condition1, " vs ", condition2))
+dev.off()
+write.csv(table(res$padj < 0.1), file=paste(condition1, "_vs_", condition2, ".significant_differential_expression_FDR_0.1.csv", sep = ""))
+write.csv(res, file=paste(condition1, "_vs_", condition2, ".analysis_result_table.csv", sep = ""))
+resSig = res[res$baseMean > 0 & order(res$pval),]
+write.csv(resSig, file=paste(condition1, "_vs_", condition2, ".significant_genes_result_table.csv", sep = ""))
+write.csv(resSig[order(resSig$pval),], file=paste(condition1, "_vs_", condition2, ".significant_genes_result_table.ordered_by_significantly_differentially_expressed.csv", sep = ""))
+write.csv(resSig[order(resSig$foldChange, -resSig$baseMean),], file=paste(condition1, "_vs_", condition2, ".significant_genes_result_table.ordered_by_significantly_down_regulation.csv", sep = ""))
+write.csv(resSig[order(-resSig$foldChange, -resSig$baseMean),], file=paste(condition1, "_vs_", condition2, ".significant_genes_result_table.ordered_by_significantly_up_regulation.csv", sep = ""))
+
+
+print("--R--DESeq-- Variance stabilizing transformation")
+notAllZero = (rowSums(counts(cds))>0)
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".per_gene_standard_deviation_log_transformation.eps", sep = ""))
+meanSdPlot(log2(counts(cds)[notAllZero,] + 1), ylim=c(0,2.5))
+dev.off()
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".per_gene_standard_deviation_variance_stabilizing_transformation.eps", sep = ""))
+meanSdPlot(vsd[notAllZero, ], ylim = c(0,2.5))
+dev.off()
+print("--R--DESeq-- Variance stabilizing transformation: moderated fold change estimates")
+mod_lfc = (rowMeans(exprs(vsd)[, conditions(cds)==condition2, drop=FALSE]) - rowMeans(exprs(vsd)[, conditions(cds)==condition1, drop=FALSE]))
+lfc = res$log2FoldChange
+write.csv(table(lfc[!is.finite(lfc)], useNA="always"), paste(condition1, "_vs_", condition2, ".log2_fold_changes_compare.csv", sep = ""))
+logdecade = 1 + round(log10(1+rowMeans(counts(cdsB, normalized = TRUE))))
+lfccol = colorRampPalette(c("gray", "blue"))(6)[logdecade]
+ymax = 4.5
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".log-ratios_vs_moderated_log-ratios.eps", sep = ""))
+plot(pmax(-ymax, pmin(ymax, lfc)), mod_lfc, xlab = "ordinary log-ratio", ylab = "moderated log-ratio", cex=0.45, asp=1, col = lfccol, pch = ifelse(lfc<(-ymax), 60, ifelse(lfc>ymax, 62, 16)))
+abline(a=0, b=1, col="red3")
+dev.off()
+
+print("--R--DESeq-- Variance stabilizing transformation: transformation vs log transformation")
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".variance_transformation_vs_log_transformation.eps", sep = ""))
+par(mai=ifelse(1:4 <= 2, par("mai"), 0))
+px = counts(cds)[,1] / sizeFactors(cds)[1]
+ord = order(px)
+ord = ord[px[ord] < 150]
+ord = ord[seq(1, length(ord), length=50)]
+last = ord[length(ord)]
+vstcol = c("blue", "black")
+matplot(px[ord], cbind(exprs(vsd)[, 1], log2(px))[ord, ], type="l", lty=1, col=vstcol, xlab="n", ylab="f(n)")
+legend("bottomright", legend = c(expression("variance stabilizing transformation"), expression(log[2](n/s[1]))), fill=vstcol)
+dev.off()
+
+

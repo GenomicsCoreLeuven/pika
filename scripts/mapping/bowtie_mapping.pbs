@@ -1,0 +1,123 @@
+#!/bin/bash -l
+#PBS -l walltime=12:00:00
+#PBS -l mem=100gb
+#PBS -l nodes=1:ppn=20
+#PBS -M MAIL 
+#PBS -m aeb
+#PBS -N bowtie_mapping
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This tool will map a single sample to the refrence genome
+##[HELP] This script is multithreaded
+##[HELP] This script runs around 2 minute for 1M reads
+##[HELP] In this script the sample, and flash options need to be changed
+##
+##[HOWTO] #Bowtie
+##[HOWTO] #The sample, flash and genome directory needs to be changed
+##[HOWTO] #start the module:
+##[HOWTO] qsub bowtie_mapping.pbs
+#loading the modules
+module use /apps/leuven/thinking/2015a/modules/all 
+module use /staging/leuven/stg_00019/software/modulefiles
+module load Bowtie2/2.2.4-intel-2015a
+module load SAMtools/1.1-intel-2015a
+module load picard/2.2.2-Java1.8.0_77
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/mapped";
+#this can be NO (for regular files), FLASH (for only flashed data) or BOTH (for both flashed and unflashed data)
+FLASH="NO";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SAMPLE="samplename";
+THREADS="20";
+#options can be --local or --end-to-end (more options see bowtie2 manual)
+#local is ideal for genome data, end is ideal for gbs, quantseq, ...
+BOWTIE_OPTIONS="--local";
+
+#the actual script
+mkdir -p $SCRATCH_DIR/genome;
+cd $SCRATCH_DIR/genome;
+rsync -ahrL $GENOME_DIR/* .;
+
+GENOME_DIR="$SCRATCH_DIR/genome/genome";
+
+#do the copy and the mapping
+cd $SCRATCH_DIR;
+mkdir -p  $SCRATCH_DIR/$SAMPLE;
+cd $SCRATCH_DIR/$SAMPLE;
+
+rsync -ahr $SAMPLE_DIR/$SAMPLE*.fastq.gz $SCRATCH_DIR/$SAMPLE/;
+gunzip *gz;
+FASTQ_FILES="";
+case "$FLASH" in
+	"NO")
+		#no flash files
+		if [ -f $SAMPLE.R2.fastq ];
+		then 
+			#paired end mapping
+			FASTQ_FILES="-1 $SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq -2 $SCRATCH_DIR/$SAMPLE/$SAMPLE.R2.fastq";
+		else
+			#single read mapping
+			FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq";
+		fi
+	;;
+	"FLASH")
+		FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.extendedFrags.fastq";
+	;;
+	"BOTH")
+		FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.extendedFrags.fastq";
+		FASTQ_FILES_SECOND_BATCH="-1 $SCRATCH_DIR/$SAMPLE/$SAMPLE.notCombined_1.fastq -2 $SCRATCH_DIR/$SAMPLE/$SAMPLE.notCombined_2.fastq";
+	;;
+esac
+
+bowtie2 -q -p $THREADS --seed 1 $BOWTIE_OPTIONS -x $GENOME_DIR $FASTQ_FILES > $SCRATCH_DIR/$SAMPLE/mapped.sam 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.bowtie2.log;
+if [ "$FLASH" == "BOTH" ];
+then
+	bowtie2 -q -p $THREADS --seed 1 $BOWTIE_OPTIONS -x $GENOME_DIR $FASTQ_FILES_SECOND_BATCH > $SCRATCH_DIR/$SAMPLE/mapped.notCombined.sam 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.bowtie2.notCombined.log;
+fi
+rm *fastq;
+
+samtools view -bS -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.sam > $SCRATCH_DIR/$SAMPLE/mapped.bam;
+rm -r $SCRATCH_DIR/$SAMPLE/mapped.sam;
+samtools sort -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted;
+#samtools index -b $SCRATCH_DIR/$SAMPLE/$SAMPLE.bam;
+rm -r $SCRATCH_DIR/$SAMPLE/mapped.bam;
+
+if [ "$FLASH" == "BOTH" ];
+then
+	#sort second sam file
+	mv $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam;
+	rm $SCRATCH_DIR/$SAMPLE/mapped.bam;
+	samtools view -bS -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.notCombined.sam > $SCRATCH_DIR/$SAMPLE/mapped.bam;
+	rm $SCRATCH_DIR/$SAMPLE/mapped.notCombined.sam;
+	samtools sort -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash;
+	rm $SCRATCH_DIR/$SAMPLE/mapped.bam;
+	#samtools index -b $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam;
+	#merge the 2 bam files
+	samtools view -H $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam | grep -v '^\@RG' > $SCRATCH_DIR/$SAMPLE/header.sam;
+	samtools view -H $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam | grep '^\@RG' | sort -u > $SCRATCH_DIR/$SAMPLE/rg.sam;
+	samtools view -H $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam | grep '^\@RG' | sort -u >> $SCRATCH_DIR/$SAMPLE/rg.sam;
+	cat $SCRATCH_DIR/$SAMPLE/rg.sam | sort -u >> $SCRATCH_DIR/$SAMPLE/header.sam;
+	samtools merge -h $SCRATCH_DIR/$SAMPLE/header.sam $SCRATCH_DIR/$SAMPLE/merged.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam;
+	rm $SCRATCH_DIR/$SAMPLE/header.sam $SCRATCH_DIR/$SAMPLE/rg.sam;
+	rm $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam;
+	rm $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam;
+	samtools sort -@ $THREADS $SCRATCH_DIR/$SAMPLE/merged.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted;
+	rm $SCRATCH_DIR/$SAMPLE/merged.bam;
+fi
+
+#run picard tools for correcting readgroups...
+picard AddOrReplaceReadGroups I=$SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted.bam O=$SCRATCH_DIR/$SAMPLE/$SAMPLE.bam RGID=$SAMPLE RGLB=$SAMPLE RGPL=illumina RGSM=$SAMPLE RGPU=$SAMPLE RGCN=GenomicsCoreLeuven CREATE_INDEX=TRUE;
+
+rm $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted.bam;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE* .;
+rm -rf $SCRATCH_DIR/$SAMPLE;
+rm -rf $SCRATCH_DIR/genome;
+
+

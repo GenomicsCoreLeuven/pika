@@ -1,0 +1,57 @@
+#GBS pipeline
+
+##[HELP] The GBS pipeline
+##[HELP] ================
+##[HELP] 
+##[HELP] The pipeline starts from one or multiple runs (in a run directory), demultiplexes the runs.
+##[HELP] There after the samples are joined to 1(sr)/2(pe) fastq file(s) per sample.
+##[HELP] Optional fastq is available.
+##[HELP] For each sample, the overlapping reads are merged to fragments (flash)
+##[HELP] Bowtie is used for mapping the samples to the reference genome
+##[HELP] A bedfile is produced to define the interesting regions
+##[HELP] Variants are called with freebayes.
+
+##[HOWTO] #This script describes how to execute the gbs pipeline.
+##[HOWTO] #After the copy, a file will be generated with this info, together with the standard help.
+##[HOWTO] #Further more the generated file will contain all commands needed to launch the scripts on the HPC.
+##[HOWTO] #Together with short one line commands to generate needed files, and check temperary results.
+
+#needed modules:
+module load bedtools/2.23.0-intel-2014a
+
+##[JOB] gbsx
+
+#Creation of the samples file:
+echo "SAMPLE" > samples.txt;
+cat ../raw/*/barcodes.tsv | awk '{print $1}' | sort | uniq >> samples.txt;
+#
+
+##[JOB] fastq_join
+##[CHANGE] fastq_join	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/gbs_demultiplexed\":"
+
+#Fastqc can be run in parallel with the flash job. With adjustment of the script this can be runed after the flash.
+##[JOB] fastqc
+##[CHANGE] fastqc	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/fastq_join\":"
+
+##[JOB] flash
+##[CHANGE] flash	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/fastq_join\":"
+
+##[JOB] bowtie_mapping_population
+##[CHANGE] bowtie_mapping_population	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/flash\":"
+
+##[JOB] bamtobed
+
+#
+#The bedfiles need to be configured to the freebayes input, you can adjust MIN_SAMPLES to the minimum number of samples where a region is needed.
+#you have to load the bedtools module
+MIN_SAMPLES="0";
+echo "REGION,NR" > regions.txt;
+cat ../bamtobed/*bed | sort -k1,1 -k2,2n | bedtools merge -c 1 -o count | awk -v minsamples=$MIN_SAMPLES '{if($4>minsamples){print $0}}' | awk '{print $1":"$2"-"$3","NR}' >> regions.txt;
+
+#
+#For large tasks it is adviced to split the regions.txt file.
+#
+
+##[JOB] freebayes_regions
+
+##[JOB] vcf_merge

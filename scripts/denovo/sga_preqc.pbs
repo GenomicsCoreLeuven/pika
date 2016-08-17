@@ -1,0 +1,41 @@
+#!/bin/bash -l
+#PBS -l walltime=2:00:00:00
+#PBS -l mem=120gb
+#PBS -l nodes=2:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m aeb
+#PBS -N sga_preqc
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This is a worker script: it uses SAMPLE and THREADS parameters
+##[HELP] This tool will create a qc report for the input of the assemebly
+##[HELP] This script can be ran multithreaded
+##[HELP] This script runs a few houres per sample (depends on the input size)
+##[HELP] The sga_preprocess needs to be ran before this step
+##
+##[HOWTO] #SGA preqc
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and THREADS column
+##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch sga_preqc.pbs -data samples.txt -epilog sga_preqc_epilog.sh -threaded 20
+#loading the modules
+module use /apps/leuven/thinking/2015a/modules/all 
+module load SGA/0.10.14-foss-2015a
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/sga_preprocess";
+OUTPUT_DIR="$PROJECT_DIR/sga_preqc";
+SCRATCH_DIR="$PROJECT_DIR/tmp/sga_preqc_output";
+
+#the actual script
+mkdir -p $SCRATCH_DIR/$SAMPLE;
+cd $SCRATCH_DIR/$SAMPLE;
+rsync -ahrL $SAMPLE_DIR/$SAMPLE* .;
+gunzip *gz;
+
+sga preqc -t $THREADS $SAMPLE.sga_readfile.fastq > $SAMPLE.preqc;
+
+mkdir -p $OUTPUT_DIR;
+rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE.preqc $OUTPUT_DIR/;
+rm -rf $SCRATCH_DIR/$SAMPLE;

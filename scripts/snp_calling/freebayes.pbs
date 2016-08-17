@@ -1,0 +1,42 @@
+#!/bin/bash -l
+#PBS -l walltime=12:00:00
+#PBS -l mem=20gb
+#PBS -l nodes=1:ppn=1
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N freebayes
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This script is deprecated
+##[HOWTO] #This script is deprecated
+module load FreeBayes/1.0.2-15-g357f175-intel-2014a
+
+PROJECT_DIR="";
+GENOME_DIR="";
+BAM_DIR="$PROJECT_DIR/mapped";
+FREEBAYES_OPTIONS="-m 20 -q 15 --use-duplicate-reads --ploidy 2 ";
+FREEBAYES_OUTPUT_FILE_NAME="freebayes.m20.q15.useduplicates.ploidy2.vcf";
+OUTPUT_DIR="$PROJECT_DIR/snp_calling";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+
+mkdir -p $SCRATCH_DIR/genome;
+cd $SCRATCH_DIR/genome;
+rsync -ahrL $GENOME_DIR/genome.fa* .;
+mkdir -p $SCRATCH_DIR/bams;
+cd $SCRATCH_DIR/bams;
+rsync -ahrL $BAM_DIR/*bam* .;
+cd $SCRATCH_DIR;
+
+bamfiles="";
+for i in `ls -1 -d $SCRATCH_DIR/bams/*bam`;
+do
+	bamfiles="$bamfiles $i";
+done
+
+freebayes --fasta-reference $SCRATCH_DIR/genome/genome.fa $FREEBAYES_OPTIONS $bamfiles > $SCRATCH_DIR/$FREEBAYES_OUTPUT_FILE_NAME;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $SCRATCH_DIR/$FREEBAYES_OUTPUT_FILE_NAME .;
+rm -rf $SCRATCH_DIR/genome;
+rm -rf $SCRATCH_DIR/bams;

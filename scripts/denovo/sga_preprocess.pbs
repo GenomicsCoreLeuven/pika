@@ -1,0 +1,59 @@
+#!/bin/bash -l
+#PBS -l walltime=2:00:00:00
+#PBS -l mem=120gb
+#PBS -l nodes=2:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N sga_preprocess
+#PBS -A default_project
+##[VERSION] pika 16.08 
+##[HELP] This is a worker script: it uses SAMPLE and THREADS parameters
+##[HELP] This tool do the sga preprocessing
+##[HELP] This script can be ran multithreaded (use the THREADS parameter)
+##[HELP] Runtime depends on the indexing step
+##
+##[HOWTO] #SGA preprocess
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
+##[HOWTO] #This uses the 2015a (there can be a more resent worker installed)
+##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] #start the module:
+##[HOWTO] #for only using 1 thread per sample:
+##[HOWTO] wsub -batch sga_preprocess.pbs -data samples.txt -epilog sga_preqc.epilog.sh
+##[HOWTO] #for using multiple threads (this case 20)
+##[HOWTO] wsub -batch sga_preprocess.pbs -data samples.txt -threaded 20 -epilog sga_preqc.epilog.sh
+#loading the modules
+module use /apps/leuven/thinking/2015a/modules/all 
+module load SGA/0.10.14-foss-2015a
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/trimmomatic";
+OUTPUT_DIR="$PROJECT_DIR/sga_preprocess";
+SCRATCH_DIR="$PROJECT_DIR/tmp";
+
+#the actual script
+mkdir -p $SCRATCH_DIR;
+cd $SCRATCH_DIR;
+mkdir -p $SCRATCH_DIR/sga_preprocess_output/$SAMPLE;
+cd $SCRATCH_DIR/sga_preprocess_output/$SAMPLE;
+rsync -ahrL $SAMPLE_DIR/$SAMPLE.R?.fastq.gz .;
+gunzip *gz;
+
+FASTQ_FILES="";
+if [ -f $SAMPLE.R2.fastq ];
+then 
+	#paired end mapping
+        FASTQ_FILES="-p 1 $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R1.fastq $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R2.fastq";
+else
+        #single read mapping
+        FASTQ_FILES="-p 0 $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R1.fastq";
+fi
+
+
+sga preprocess $FASTQ_FILES > $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_readfile.fastq 2> $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_preprocess.log; 
+rm $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R?.fastq;
+sga index -a ropebwt --no-reverse -t $THREADS $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_readfile.fastq > $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_index.log;
+
+gzip $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE*.fastq;
+mkdir -p $OUTPUT_DIR;
+rsync -ahrL $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/* $OUTPUT_DIR/;
+rm -rf $SCRATCH_NODE/sga_preprocess_output/$SAMPLE;

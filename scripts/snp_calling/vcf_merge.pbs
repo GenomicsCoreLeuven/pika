@@ -1,0 +1,37 @@
+#!/bin/bash -l
+#PBS -l walltime=0:12:00:00
+#PBS -l nodes=1:ppn=1:ivybridge
+#PBS -l pmem=120gb
+#PBS -M MAIL 
+#PBS -m aeb
+#PBS -N vcf_merge
+#PBS -A default_project
+##[VERSION] pika 16.08 
+##[HELP] This tool will merge multiple vcf files
+##[HELP] This script will use only one cpu
+##[HELP] This scripts runtime depends on the number of vcf files, the size of the files, the number of columns, ...
+##[HELP] The output file name will have to change
+##
+##[HOWTO] #VCF merge
+##[HOWTO] #change the output name of the vcf files
+##[HOWTO] #start the module:
+##[HOWTO] qsub vcf_merge.pbs
+#loading the modules
+module load vcflib/20160720-intel-2015a
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+VCF_DIR="$PROJECT_DIR/parts";
+OUTPUT_DIR="$PROJECT_DIR/";
+FREEBAYES_OUTPUT_FILE_NAME="freebayes.m15.q15.useduplicates.ploidy2.vcf";
+SCRATCH_DIR="$VSC_SCRATCH_NODE";
+
+#the actual script
+cd $VCF_DIR;
+cat *.vcf | vcffirstheader > $SCRATCH_DIR/combined.tmp
+grep "^#" $SCRATCH_DIR/combined.tmp > $SCRATCH_DIR/sorted.tmp;
+grep -v "^#" $SCRATCH_DIR/combined.tmp | sort -k1,1 -k2,2n >> $SCRATCH_DIR/sorted.tmp;
+rm $SCRATCH_DIR/combined.tmp;
+cat $SCRATCH_DIR/sorted.tmp | vcfuniq > $OUTPUT_DIR/$FREEBAYES_OUTPUT_FILE_NAME;
+
+

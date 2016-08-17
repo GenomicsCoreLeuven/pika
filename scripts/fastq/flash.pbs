@@ -1,0 +1,59 @@
+#!/bin/bash -l
+#PBS -l walltime=6:00:00
+#PBS -l mem=30gb
+#PBS -l nodes=1:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N flash
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This is a worker script: it uses SAMPLE parameters
+##[HELP] This tool will merge overlapping reads to 1 (ends with 3 files: R1, R2 of non overlapping, and overlapped reads)
+##[HELP] This script will use only one cpu per sample
+##[HELP] This scripts runtime is limited (less then some houres) 
+##
+##[HOWTO] #FLASH
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
+##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] source switch_to_2015a
+##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch flash.pbs -data samples.txt
+#loading the modules
+module load FLASH/1.2.10
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/flash";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+IS_TRIMMOMATIC="no";
+
+#the actual script
+mkdir -p $SCRATCH_DIR/$SAMPLE;
+cd $SCRATCH_DIR/$SAMPLE;
+
+rsync -ahr $SAMPLE_DIR/$SAMPLE* .;
+
+flash -z -d $SCRATCH_DIR/$SAMPLE -o $SAMPLE $SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.R2.fastq.gz > $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.log 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.log;
+
+if [ "$IS_TRIMMOMATIC" == "yes" ];
+then
+	zcat $SAMPLE.extendedFrags.fastq.gz > $SAMPLE.tmp.fastq;
+	zcat $SAMPLE.unpaired.forward.fastq.gz >> $SAMPLE.tmp.fastq;
+	zcat $SAMPLE.unpaired.reverse.fastq.gz >> $SAMPLE.tmp.fastq;
+	rm $SAMPLE.extendedFrags.fastq.gz;
+	mv $SAMPLE.tmp.fastq $SAMPLE.extendedFrags.fastq;
+	gzip $SAMPLE.extendedFrags.fastq;
+	rm $SAMPLE.unpaired*;
+fi
+
+rm $SAMPLE.R?.fastq.gz;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $SCRATCH_DIR/$SAMPLE/* .;
+
+rm -rf $SCRATCH_DIR/$SAMPLE;
+
+

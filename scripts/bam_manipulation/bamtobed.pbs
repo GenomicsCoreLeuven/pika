@@ -1,0 +1,44 @@
+#!/bin/bash -l
+#PBS -l walltime=6:00:00
+#PBS -l mem=50gb
+#PBS -l nodes=1:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N bamtobed
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This is a worker script: it uses SAMPLE parameters
+##[HELP] This tool will make a bed file of a bam file
+##[HELP] This script will use only one cpu
+##[HELP] This script runs only a 1 minute per 1M reads
+##
+##[HOWTO] #BAMTOBED
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
+##[HOWTO] #This uses the 2014a (there can be a more recent worker installed)
+##[HOWTO] module load worker/1.5.2-intel-2014a
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch bamtobed.pbs -data samples.txt
+#loading the modules
+module load bedtools/2.23.0-intel-2014a
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/mapped";
+OUTPUT_DIR="$PROJECT_DIR/bamtobed";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+
+#the actual script
+mkdir -p $SCRATCH_DIR/$SAMPLE;
+cd $SCRATCH_DIR/$SAMPLE;
+rsync -ahr $SAMPLE_DIR/$SAMPLE.bam .;
+
+bedtools bamtobed -i $SAMPLE.bam > $SAMPLE.bed;
+
+rm $SAMPLE.bam;
+gzip $SAMPLE*;
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE.bed .;
+
+rm -r $SCRATCH_DIR/$SAMPLE;
+
+

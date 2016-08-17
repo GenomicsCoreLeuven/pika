@@ -1,0 +1,56 @@
+#!/bin/bash -l
+#PBS -l walltime=10:00:00
+#PBS -l mem=30gb
+#PBS -l nodes=1:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N gbsx
+#PBS -A default_project
+##[VERSION] pika 16.08
+##[HELP] This is a worker script: it uses RUN parameters
+##[HELP] This tool will demultiplex runs with inline barcodes
+##[HELP] It needs a file barcodes.tsv (see gbsx help) in the run directory
+##[HELP] This script will use only one cpu per RUN
+##[HELP] This script runs for 10 houres per RUN
+##
+##[HOWTO] #GBSX
+##[HOWTO] #Create a data file (runs.txt), with a RUN column
+##[HOWTO] #The file system should be RUN_DIR/runname/ with the raw gziped fastq files, and the barcodes.tsv file (see gbsx website)
+##[HOWTO] #The barcodes.tsv is a tabdelimited file, with (no header) sample, barcode, enzyme
+##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch gbsx.pbs -data runs.txt
+#loading the modules
+module use /staging/leuven/stg_00019/software/modulefiles
+module load gbsx/v1.2-Java1.8.0_77
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+RUN_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/gbsx";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+
+#the actual script
+#do the copy and demultiplexing
+mkdir -p $SCRATCH_DIR/$RUN;
+cd $SCRATCH_DIR/$RUN;
+
+rsync -ahrL $RUN_DIR/$RUN/*.gz .;
+rsync -ahrL $RUN_DIR/$RUN/barcodes.tsv .;
+
+FILE1=`find $SCRATCH_DIR/$RUN -name '*R1*'`;
+FILE2=`find $SCRATCH_DIR/$RUN -name '*R2*'`;
+
+GBSX --Demultiplexer -f1 $FILE1 -f2 $FILE2 -i $SCRATCH_DIR/$RUN/barcodes.tsv -o $SCRATCH_DIR/$RUN -gzip true; 
+
+rm *$RUN*.gz;
+rm barcodes.tsv;
+
+mkdir -p $OUTPUT_DIR/$RUN;
+cd $OUTPUT_DIR/$RUN;
+rsync -ahr $SCRATCH_DIR/$RUN/* .;
+
+rm -rf $SCRATCH_DIR/$RUN;
+
+
