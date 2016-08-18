@@ -12,7 +12,7 @@ The main script is found in the source directory. Just execute the pika.sh file.
 #Download
 The code of pika is found in the source directory. All scripts/jobs (pbs) are found in the scripts directory, divided into subfolders according to type. All pipelines are summed into the pipeline directory. The script uses this structure, but when a script or pipeline is added (as a file), it is added in the tool.
 ###Release Download
-The releases can be downloaded in the release tab. Just unpack the download, and the tool is ready to use.
+The releases can be downloaded in the release tab or with by clicking on the download button. Just unpack the download, and the tool is ready to use.
 ###Git clone
 On the vsc:
 ```bash
