@@ -116,6 +116,6 @@ mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
 rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE* .;
 rm -rf $SCRATCH_DIR/$SAMPLE;
-rm -rf $SCRATCH_DIR/genome;
+#rm -rf $SCRATCH_DIR/genome;
 
 

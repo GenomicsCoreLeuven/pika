@@ -1,4 +1,5 @@
 #!/bin/sh
+VERSION="pika 16.08";
 BASEDIR=$(dirname $0);
 LIB_DIR="$BASEDIR/libs";
 source $LIB_DIR/variables_and_settings.sh;
@@ -15,7 +16,7 @@ set_genome_dir;
 
 #version
 get_version(){
-	echo "PIKA 16.08";
+	echo "$VERSION";
 }
 
 #show help
