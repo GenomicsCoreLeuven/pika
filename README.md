@@ -9,10 +9,25 @@ pika, named after the *Ochotona* species, is originally aimed to create bioinfor
 The main script is found in the source directory. Just execute the pika.sh file. First execution will ask some configuration parameters. Some standard pipelines and scripts are already included. pika should work out of the box on the [vsc](https://www.vscentrum.be/). If used on other hpc systems, probably the modules will have to change (these modules are always listed at the top).   
 
 
-##Download
+#Download
 The code of pika is found in the source directory. All scripts/jobs (pbs) are found in the scripts directory, divided into subfolders according to type. All pipelines are summed into the pipeline directory. The script uses this structure, but when a script or pipeline is added (as a file), it is added in the tool.
+###Release Download
+The releases can be downloaded in the release tab or with by clicking on the download button. Just unpack the download, and the tool is ready to use.
+###Git clone
+On the vsc:
+```bash
+source switch_to_2015a
+module load git/2.9.2-intel-2015a
+git clone https://github.com/GenomicsCoreLeuven/pika.git
+#when the clone is ready, the executable is found in source/pike.sh
 
-## Contact
+#to update your current version use:
+source switch_to_2015a
+module load git/2.9.2-intel-2015a
+git pull
+```
+
+# Contact
 [Genomics Core](http://www.genomicscore.be "Genomics Core website")  
 Center for Human Genetics  
 UZ – KU Leuven  
@@ -21,10 +36,10 @@ B-3000 Leuven, Belgium
 
 Mail: [koen.herten@kuleuven.be](mailto:koen.herten@kuleuven.be "")
 
-##License
+#License
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) This work is licensed under GPL v3. A copy of the license is included
 
-##Citing
+#Citing
 
 Koen Herten. (2016). pika: pika 16.08. Zenodo. 10.5281/zenodo.60342
 
