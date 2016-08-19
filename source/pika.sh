@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION="pika 16.08";
+VERSION="pika 16.08 dev";
 BASEDIR=$(dirname $0);
 LIB_DIR="$BASEDIR/libs";
 source $LIB_DIR/variables_and_settings.sh;
