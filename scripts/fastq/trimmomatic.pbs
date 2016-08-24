@@ -38,7 +38,7 @@ fi
 
 #the actual script
 mkdir -p $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
 rsync -ahr $SAMPLE_DIR/$SAMPLE* .;

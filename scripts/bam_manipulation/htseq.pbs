@@ -35,7 +35,7 @@ STRICT="yes";
 
 #the actual script
 mkdir -p $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
 if [ "$STRICT" == "yes" ];
 then
 	HTSEQ_PARAM="-s no -a 10 -i gene_name -t gene -m union";

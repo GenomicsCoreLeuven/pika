@@ -50,7 +50,7 @@ EXTRA_SETTINGS="";
 
 #the actual script
 mkdir -p $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
 mkdir -p $TMP_DIR;
 cd $TMP_DIR;
 rsync -ahrL $SAMPLE_DIR/$SAMPLE.fastq.gz pacbio.fastq.gz;

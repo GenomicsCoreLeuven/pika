@@ -33,7 +33,7 @@ SCRATCH_DIR=$VSC_SCRATCH_NODE;
 #the actual script
 ##here the actual code of the script is written. There are no limitations to the code itself, as long as it is well documented in the help, howto, and parameters.
 mkdir -p $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
 echo "Hello world" > hello_world.txt;
 #here the scratch directory is created, and hello_world is written into a file.
 
