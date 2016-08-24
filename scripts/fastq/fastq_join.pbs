@@ -28,8 +28,9 @@ OUTPUT_DIR="$PROJECT_DIR/fastq_join";
 SCRATCH_DIR=$VSC_SCRATCH_NODE;
 
 #the actual script
-mkdir -p $SCRATCH_DIR/$SAMPLE;
-cd $SCRATCH_DIR/$SAMPLE;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 
 R1count=`ls -1 -d $SAMPLE_DIR/*/$SAMPLE.R1.fastq.gz | wc -l`;
 R2count=`ls -1 -d $SAMPLE_DIR/*/$SAMPLE.R2.fastq.gz | wc -l`;
@@ -40,25 +41,25 @@ then
 	#equal number, or no R2 files
 	for i in `ls -1 -d $SAMPLE_DIR/*/$SAMPLE.R1.fastq.gz`;
 	do
-		zcat $i >> $SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq;
+		zcat $i >> $TMP_DIR/$SAMPLE.R1.fastq;
 		if [ "$R2count" -ne "0" ];
 	        then
         	        #R2 files exists
 			j=`echo $i | sed 's/R1/R2/'`;
-			zcat $j >> $SCRATCH_DIR/$SAMPLE/$SAMPLE.R2.fastq; 
+			zcat $j >> $TMP_DIR/$SAMPLE.R2.fastq; 
        		fi
 	done
 else
 	#different number, so error exit
-	rm -r $SCRATCH_DIR/$SAMPLE;
+	rm -r $TMP_DIR;
 	exit 1;
 fi
 
 gzip $SAMPLE*;
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE.R?.fastq.gz .;
+rsync -ahr $TMP_DIR/$SAMPLE.R?.fastq.gz .;
 
-rm -r $SCRATCH_DIR/$SAMPLE;
+rm -r $TMP_DIR;
 
 

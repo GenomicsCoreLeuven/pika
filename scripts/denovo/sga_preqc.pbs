@@ -29,13 +29,14 @@ OUTPUT_DIR="$PROJECT_DIR/sga_preqc";
 SCRATCH_DIR="$PROJECT_DIR/tmp/sga_preqc_output";
 
 #the actual script
-mkdir -p $SCRATCH_DIR/$SAMPLE;
-cd $SCRATCH_DIR/$SAMPLE;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 rsync -ahrL $SAMPLE_DIR/$SAMPLE* .;
 gunzip *gz;
 
 sga preqc -t $THREADS $SAMPLE.sga_readfile.fastq > $SAMPLE.preqc;
 
 mkdir -p $OUTPUT_DIR;
-rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE.preqc $OUTPUT_DIR/;
-rm -rf $SCRATCH_DIR/$SAMPLE;
+rsync -ahr $TMP_DIR/$SAMPLE.preqc $OUTPUT_DIR/;
+rm -rf $TMP_DIR;

@@ -25,13 +25,15 @@ SCRATCH_DIR="$VSC_SCRATCH";
 OUTPUT_DIR="$PROJECT_DIR/fastqc";
 
 #the actual script
-mkdir $OUTPUT_DIR;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+mkdir -p $OUTPUT_DIR;
 cd $RUN_DIR/$RUN;
 for i in `ls -1 -d *.fastq.gz`;
 do
 	files="$files $i";
 done
 
-fastqc -o $OUTPUT_DIR -t 20 -d $SCRATCH_DIR $files;
+fastqc -o $OUTPUT_DIR -t 20 -d $TMP_DIR $files;
 
-
+rm -rf $TMP_DIR;

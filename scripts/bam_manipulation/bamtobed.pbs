@@ -27,8 +27,9 @@ OUTPUT_DIR="$PROJECT_DIR/bamtobed";
 SCRATCH_DIR=$VSC_SCRATCH_NODE;
 
 #the actual script
-mkdir -p $SCRATCH_DIR/$SAMPLE;
-cd $SCRATCH_DIR/$SAMPLE;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 rsync -ahr $SAMPLE_DIR/$SAMPLE.bam .;
 
 bedtools bamtobed -i $SAMPLE.bam > $SAMPLE.bed;
@@ -37,8 +38,8 @@ rm $SAMPLE.bam;
 gzip $SAMPLE*;
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE.bed .;
+rsync -ahr $TMP_DIR/$SAMPLE.bed .;
 
-rm -r $SCRATCH_DIR/$SAMPLE;
+rm -r $TMP_DIR/$SAMPLE;
 
 

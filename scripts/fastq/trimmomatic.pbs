@@ -37,8 +37,9 @@ else
 fi 
 
 #the actual script
-mkdir -p $SCRATCH_DIR/$SAMPLE;
-cd $SCRATCH_DIR/$SAMPLE;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 
 rsync -ahr $SAMPLE_DIR/$SAMPLE* .;
 
@@ -47,16 +48,16 @@ if [ -f $SAMPLE.R2.fastq ];
 then
 	#paired end
 	MODE="PE";
-        FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.R2.fastq.gz";
-	OUTPUT="$SCRATCH_DIR/$SAMPLE/$SAMPLE.paired.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.unpaired.forward.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.paired.R2.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.unpaired.reverse.R1.fastq.gz";
+        FASTQ_FILES="$TMP_DIR/$SAMPLE.R1.fastq.gz $TMP_DIR/$SAMPLE.R2.fastq.gz";
+	OUTPUT="$TMP_DIR/$SAMPLE.paired.R1.fastq.gz $TMP_DIR/$SAMPLE.unpaired.forward.R1.fastq.gz $TMP_DIR/$SAMPLE.paired.R2.fastq.gz $TMP_DIR/$SAMPLE.unpaired.reverse.R1.fastq.gz";
 else
 	#single read
 	MODE="SE";
-	FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz";
-	OUTPUT="$SCRATCH_DIR/$SAMPLE/$SAMPLE.paired.R1.fastq.gz";
+	FASTQ_FILES="$TMP_DIR/$SAMPLE.R1.fastq.gz";
+	OUTPUT="$TMP_DIR/$SAMPLE.paired.R1.fastq.gz";
 fi
 
-trimmomatic $MODE -threads $THREADS -phred64 $FASTQ_FILES $OUTPUT $ILLUMINACLIP > $SCRATCH_DIR/$SAMPLE/$SAMPLE.log 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.log;
+trimmomatic $MODE -threads $THREADS -phred64 $FASTQ_FILES $OUTPUT $ILLUMINACLIP > $TMP_DIR/$SAMPLE.log 2> $TMP_DIR/$SAMPLE.log;
 
 
 rm $SAMPLE.R?.fastq.gz;
@@ -68,8 +69,8 @@ fi
 
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahr $SCRATCH_DIR/$SAMPLE/* .;
+rsync -ahr $TMP_DIR/* .;
 
-rm -r $SCRATCH_DIR/$SAMPLE;
+rm -r $TMP_DIR;
 
 

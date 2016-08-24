@@ -32,28 +32,27 @@ SCRATCH_DIR="$PROJECT_DIR/tmp";
 
 #the actual script
 mkdir -p $SCRATCH_DIR;
-cd $SCRATCH_DIR;
-mkdir -p $SCRATCH_DIR/sga_preprocess_output/$SAMPLE;
-cd $SCRATCH_DIR/sga_preprocess_output/$SAMPLE;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 rsync -ahrL $SAMPLE_DIR/$SAMPLE.R?.fastq.gz .;
 gunzip *gz;
 
 FASTQ_FILES="";
 if [ -f $SAMPLE.R2.fastq ];
 then 
-	#paired end mapping
-        FASTQ_FILES="-p 1 $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R1.fastq $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R2.fastq";
+	#paired end
+        FASTQ_FILES="-p 1 $TMP_DIR/$SAMPLE.R1.fastq $TMP_DIR/$SAMPLE.R2.fastq";
 else
-        #single read mapping
-        FASTQ_FILES="-p 0 $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R1.fastq";
+        #single read
+        FASTQ_FILES="-p 0 $TMP_DIR/$SAMPLE.R1.fastq";
 fi
 
 
-sga preprocess $FASTQ_FILES > $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_readfile.fastq 2> $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_preprocess.log; 
-rm $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.R?.fastq;
-sga index -a ropebwt --no-reverse -t $THREADS $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_readfile.fastq > $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE.sga_index.log;
+sga preprocess $FASTQ_FILES > $TMP_DIR/$SAMPLE.sga_readfile.fastq 2> $TMP_DIR/$SAMPLE.sga_preprocess.log; 
+rm $TMP_DIR/$SAMPLE.R?.fastq;
+sga index -a ropebwt --no-reverse -t $THREADS $TMP_DIR/$SAMPLE.sga_readfile.fastq > $TMP_DIR/$SAMPLE.sga_index.log;
 
-gzip $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/$SAMPLE*.fastq;
+gzip $TMP_DIR/$SAMPLE*.fastq;
 mkdir -p $OUTPUT_DIR;
-rsync -ahrL $SCRATCH_DIR/sga_preprocess_output/$SAMPLE/* $OUTPUT_DIR/;
-rm -rf $SCRATCH_NODE/sga_preprocess_output/$SAMPLE;
+rsync -ahrL $TMP_DIR/* $OUTPUT_DIR/;
+rm -rf $TMP_DIR;

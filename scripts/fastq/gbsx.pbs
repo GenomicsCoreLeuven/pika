@@ -35,24 +35,25 @@ THREADS="20";
 
 #the actual script
 #do the copy and demultiplexing
-mkdir -p $SCRATCH_DIR/$RUN;
-cd $SCRATCH_DIR/$RUN;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 
 rsync -ahrL $RUN_DIR/$RUN/*.gz .;
 rsync -ahrL $RUN_DIR/$RUN/barcodes.tsv .;
 
-FILE1=`find $SCRATCH_DIR/$RUN -name '*R1*'`;
-FILE2=`find $SCRATCH_DIR/$RUN -name '*R2*'`;
+FILE1=`find $TMP_DIR -name '*R1*'`;
+FILE2=`find $TMP_DIR -name '*R2*'`;
 
-GBSX --Demultiplexer -t $THREADS -f1 $FILE1 -f2 $FILE2 -i $SCRATCH_DIR/$RUN/barcodes.tsv -o $SCRATCH_DIR/$RUN -gzip true; 
+GBSX --Demultiplexer -t $THREADS -f1 $FILE1 -f2 $FILE2 -i $TMP_DIR/barcodes.tsv -o $TMP_DIR -gzip true; 
 
 rm *$RUN*.gz;
 rm barcodes.tsv;
 
 mkdir -p $OUTPUT_DIR/$RUN;
 cd $OUTPUT_DIR/$RUN;
-rsync -ahr $SCRATCH_DIR/$RUN/* .;
+rsync -ahrL $TMP_DIR/* .;
 
-rm -rf $SCRATCH_DIR/$RUN;
+rm -rf $TMP_DIR;
 
 

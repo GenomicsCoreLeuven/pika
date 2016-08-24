@@ -46,10 +46,10 @@ GENOME_DIR="$SCRATCH_DIR/genome/genome";
 
 #do the copy and the mapping
 cd $SCRATCH_DIR;
-mkdir -p  $SCRATCH_DIR/$SAMPLE;
-cd $SCRATCH_DIR/$SAMPLE;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 
-rsync -ahr $SAMPLE_DIR/$SAMPLE*.fastq.gz $SCRATCH_DIR/$SAMPLE/;
+rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fastq.gz .;
 gunzip *gz;
 FASTQ_FILES="";
 case "$FLASH" in
@@ -58,66 +58,66 @@ case "$FLASH" in
 		if [ -f $SAMPLE.R2.fastq ];
 		then 
 			#paired end mapping
-			FASTQ_FILES="-1 $SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq -2 $SCRATCH_DIR/$SAMPLE/$SAMPLE.R2.fastq";
+			FASTQ_FILES="-1 $TMP_DIR/$SAMPLE.R1.fastq -2 $TMP_DIR/$SAMPLE.R2.fastq";
 		else
 			#single read mapping
-			FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq";
+			FASTQ_FILES="$TMP_DIR/$SAMPLE.R1.fastq";
 		fi
 	;;
 	"FLASH")
-		FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.extendedFrags.fastq";
+		FASTQ_FILES="$TMP_DIR/$SAMPLE.extendedFrags.fastq";
 	;;
 	"BOTH")
-		FASTQ_FILES="$SCRATCH_DIR/$SAMPLE/$SAMPLE.extendedFrags.fastq";
-		FASTQ_FILES_SECOND_BATCH="-1 $SCRATCH_DIR/$SAMPLE/$SAMPLE.notCombined_1.fastq -2 $SCRATCH_DIR/$SAMPLE/$SAMPLE.notCombined_2.fastq";
+		FASTQ_FILES="$TMP_DIR/$SAMPLE.extendedFrags.fastq";
+		FASTQ_FILES_SECOND_BATCH="-1 $TMP_DIR/$SAMPLE.notCombined_1.fastq -2 $TMP_DIR/$SAMPLE.notCombined_2.fastq";
 	;;
 esac
 
-bowtie2 -q -p $THREADS --seed 1 $BOWTIE_OPTIONS -x $GENOME_DIR $FASTQ_FILES > $SCRATCH_DIR/$SAMPLE/mapped.sam 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.bowtie2.log;
+bowtie2 -q -p $THREADS --seed 1 $BOWTIE_OPTIONS -x $GENOME_DIR $FASTQ_FILES > $TMP_DIR/mapped.sam 2> $TMP_DIR/$SAMPLE.bowtie2.log;
 if [ "$FLASH" == "BOTH" ];
 then
-	bowtie2 -q -p $THREADS --seed 1 $BOWTIE_OPTIONS -x $GENOME_DIR $FASTQ_FILES_SECOND_BATCH > $SCRATCH_DIR/$SAMPLE/mapped.notCombined.sam 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.bowtie2.notCombined.log;
+	bowtie2 -q -p $THREADS --seed 1 $BOWTIE_OPTIONS -x $GENOME_DIR $FASTQ_FILES_SECOND_BATCH > $TMP_DIR/mapped.notCombined.sam 2> $TMP_DIR/$SAMPLE.bowtie2.notCombined.log;
 fi
 rm *fastq;
 
-samtools view -bS -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.sam > $SCRATCH_DIR/$SAMPLE/mapped.bam;
-rm -r $SCRATCH_DIR/$SAMPLE/mapped.sam;
-samtools sort -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted;
-#samtools index -b $SCRATCH_DIR/$SAMPLE/$SAMPLE.bam;
-rm -r $SCRATCH_DIR/$SAMPLE/mapped.bam;
+samtools view -bS -@ $THREADS $TMP_DIR/mapped.sam > $TMP_DIR/mapped.bam;
+rm -r $TMP_DIR/mapped.sam;
+samtools sort -@ $THREADS $TMP_DIR/mapped.bam $TMP_DIR/$SAMPLE.sorted;
+#samtools index -b $TMP_DIR/$SAMPLE.bam;
+rm -r $TMP_DIR/mapped.bam;
 
 if [ "$FLASH" == "BOTH" ];
 then
 	#sort second sam file
-	mv $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam;
-	rm $SCRATCH_DIR/$SAMPLE/mapped.bam;
-	samtools view -bS -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.notCombined.sam > $SCRATCH_DIR/$SAMPLE/mapped.bam;
-	rm $SCRATCH_DIR/$SAMPLE/mapped.notCombined.sam;
-	samtools sort -@ $THREADS $SCRATCH_DIR/$SAMPLE/mapped.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash;
-	rm $SCRATCH_DIR/$SAMPLE/mapped.bam;
-	#samtools index -b $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam;
+	mv $TMP_DIR/$SAMPLE.sorted.bam $TMP_DIR/$SAMPLE.flash.bam;
+	rm $TMP_DIR/mapped.bam;
+	samtools view -bS -@ $THREADS $TMP_DIR/mapped.notCombined.sam > $TMP_DIR/mapped.bam;
+	rm $TMP_DIR/mapped.notCombined.sam;
+	samtools sort -@ $THREADS $TMP_DIR/mapped.bam $TMP_DIR/$SAMPLE.notflash;
+	rm $TMP_DIR/mapped.bam;
+	#samtools index -b $TMP_DIR/$SAMPLE.notflash.bam;
 	#merge the 2 bam files
-	samtools view -H $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam | grep -v '^\@RG' > $SCRATCH_DIR/$SAMPLE/header.sam;
-	samtools view -H $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam | grep '^\@RG' | sort -u > $SCRATCH_DIR/$SAMPLE/rg.sam;
-	samtools view -H $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam | grep '^\@RG' | sort -u >> $SCRATCH_DIR/$SAMPLE/rg.sam;
-	cat $SCRATCH_DIR/$SAMPLE/rg.sam | sort -u >> $SCRATCH_DIR/$SAMPLE/header.sam;
-	samtools merge -h $SCRATCH_DIR/$SAMPLE/header.sam $SCRATCH_DIR/$SAMPLE/merged.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam;
-	rm $SCRATCH_DIR/$SAMPLE/header.sam $SCRATCH_DIR/$SAMPLE/rg.sam;
-	rm $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.bam;
-	rm $SCRATCH_DIR/$SAMPLE/$SAMPLE.notflash.bam;
-	samtools sort -@ $THREADS $SCRATCH_DIR/$SAMPLE/merged.bam $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted;
-	rm $SCRATCH_DIR/$SAMPLE/merged.bam;
+	samtools view -H $TMP_DIR/$SAMPLE.notflash.bam | grep -v '^\@RG' > $TMP_DIR/header.sam;
+	samtools view -H $TMP_DIR/$SAMPLE.notflash.bam | grep '^\@RG' | sort -u > $TMP_DIR/rg.sam;
+	samtools view -H $TMP_DIR/$SAMPLE.flash.bam | grep '^\@RG' | sort -u >> $TMP_DIR/rg.sam;
+	cat $TMP_DIR/rg.sam | sort -u >> $TMP_DIR/header.sam;
+	samtools merge -h $TMP_DIR/header.sam $TMP_DIR/merged.bam $TMP_DIR/$SAMPLE.flash.bam $TMP_DIR/$SAMPLE.notflash.bam;
+	rm $TMP_DIR/header.sam $TMP_DIR/rg.sam;
+	rm $TMP_DIR/$SAMPLE.flash.bam;
+	rm $TMP_DIR/$SAMPLE.notflash.bam;
+	samtools sort -@ $THREADS $TMP_DIR/merged.bam $TMP_DIR/$SAMPLE.sorted;
+	rm $TMP_DIR/merged.bam;
 fi
 
 #run picard tools for correcting readgroups...
-picard AddOrReplaceReadGroups I=$SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted.bam O=$SCRATCH_DIR/$SAMPLE/$SAMPLE.bam RGID=$SAMPLE RGLB=$SAMPLE RGPL=illumina RGSM=$SAMPLE RGPU=$SAMPLE RGCN=GenomicsCoreLeuven CREATE_INDEX=TRUE;
+picard AddOrReplaceReadGroups I=$TMP_DIR/$SAMPLE.sorted.bam O=$TMP_DIR/$SAMPLE.bam RGID=$SAMPLE RGLB=$SAMPLE RGPL=illumina RGSM=$SAMPLE RGPU=$SAMPLE RGCN=GenomicsCoreLeuven CREATE_INDEX=TRUE;
 
-rm $SCRATCH_DIR/$SAMPLE/$SAMPLE.sorted.bam;
+rm $TMP_DIR/$SAMPLE.sorted.bam;
 
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahr $SCRATCH_DIR/$SAMPLE/$SAMPLE* .;
-rm -rf $SCRATCH_DIR/$SAMPLE;
+rsync -ahr $TMP_DIR/$SAMPLE* .;
+rm -rf $TMP_DIR/$SAMPLE;
 rm -rf $SCRATCH_DIR/genome;
 
 

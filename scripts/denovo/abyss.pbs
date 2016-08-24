@@ -29,8 +29,9 @@ OUTPUT_DIR="$PROJECT_DIR/abyss_$KMER";
 SCRATCH_DIR="$VSC_SCRATCH_NODE";
 
 #the actual script
-mkdir -p $SCRATCH_DIR/abyss_output;
-cd $SCRATCH_DIR/abyss_output;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 rsync $SAMPLE_DIR/$SAMPLE*.gz .;
 gunzip *gz;
 
@@ -45,5 +46,5 @@ abyss-pe name="$NAME" k=$KMER lib="pe250_1 pe250_2" pe250_1="GC029509.160212_mic
 rm *fastq;
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahrL $SCRATCH_DIR/abyss_output .;
-rm -r $SCRATCH_DIR;
+rsync -ahrL $TMP_DIR .;
+rm -r $TMP_DIR;

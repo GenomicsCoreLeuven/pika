@@ -34,6 +34,8 @@ GENES_ANNOTATION_FILE="$GENOME_DIR/Ensembl/current/genes.gtf";
 STRICT="yes";
 
 #the actual script
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
 if [ "$STRICT" == "yes" ];
 then
 	HTSEQ_PARAM="-s no -a 10 -i gene_name -t gene -m union";
@@ -43,8 +45,7 @@ else
 	OUTPUT_FILE_NAME="$SAMPLE.htseq_a0_genes_strand_intersectionNonempty.counts";
 fi
 
-mkdir -p $SCRATCH_DIR/$SAMPLE;
-cd $SCRATCH_DIR/$SAMPLE;
+cd $TMP_DIR;
 rsync -ahr $SAMPLE_DIR/$SAMPLE.bam .;
 
 #BAM to SAM
@@ -54,8 +55,8 @@ htseq-count $HTSEQ_PARAM $SAMPLE.sam $GENES_ANNOTATION_FILE > $OUTPUT_FILE_NAME
 
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahr $SCRATCH_DIR/$SAMPLE/$OUTPUT_FILE_NAME .;
+rsync -ahr $TMP_DIR/$OUTPUT_FILE_NAME .;
 
-rm -r $SCRATCH_DIR/$SAMPLE;
+rm -r $TMP_DIR;
 
 

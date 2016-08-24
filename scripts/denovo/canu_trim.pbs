@@ -37,13 +37,15 @@ EXTRA_SETTINGS="";
 
 #the actual script
 mkdir -p $SCRATCH_DIR;
-cd $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 rsync -ahrL $SAMPLE_DIR/* .;
 
 #running CANU
-canu -trim -p $SAMPLE -d $SCRATCH_DIR genomeSize=$GENOME_SIZE usegrid=0 maxMemory=$MAX_MEM maxThreads=$MAX_THREADS $EXTRA_SETTINGS -pacbio-corrected $SCRATCH_DIR/correction/$SAMPLE.correctedReads.fasta.gz;
+canu -trim -p $SAMPLE -d $TMP_DIR genomeSize=$GENOME_SIZE usegrid=0 maxMemory=$MAX_MEM maxThreads=$MAX_THREADS $EXTRA_SETTINGS -pacbio-corrected $TMP_DIR/correction/$SAMPLE.correctedReads.fasta.gz;
 
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahrL $SCRATCH_DIR/* .;
+rsync -ahrL $TMP_DIR/* .;
 
+rm -r $TMP_DIR;

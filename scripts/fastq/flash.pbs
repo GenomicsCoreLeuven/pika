@@ -30,12 +30,13 @@ SCRATCH_DIR=$VSC_SCRATCH_NODE;
 IS_TRIMMOMATIC="no";
 
 #the actual script
-mkdir -p $SCRATCH_DIR/$SAMPLE;
-cd $SCRATCH_DIR/$SAMPLE;
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR/tmp.XXXXXXXX`;
+cd $TMP_DIR;
 
 rsync -ahr $SAMPLE_DIR/$SAMPLE* .;
 
-flash -z -d $SCRATCH_DIR/$SAMPLE -o $SAMPLE $SCRATCH_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz $SCRATCH_DIR/$SAMPLE/$SAMPLE.R2.fastq.gz > $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.log 2> $SCRATCH_DIR/$SAMPLE/$SAMPLE.flash.log;
+flash -z -d $TMP_DIR -o $SAMPLE $TMP_DIR/$SAMPLE.R1.fastq.gz $TMP_DIR/$SAMPLE.R2.fastq.gz > $TMP_DIR/$SAMPLE.flash.log 2> $TMP_DIR/$SAMPLE.flash.log;
 
 if [ "$IS_TRIMMOMATIC" == "yes" ];
 then
@@ -52,8 +53,8 @@ rm $SAMPLE.R?.fastq.gz;
 
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahr $SCRATCH_DIR/$SAMPLE/* .;
+rsync -ahr $TMP_DIR/* .;
 
-rm -rf $SCRATCH_DIR/$SAMPLE;
+rm -rf $TMP_DIR;
 
 
