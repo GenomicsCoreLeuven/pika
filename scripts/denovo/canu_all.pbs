@@ -43,5 +43,5 @@ canu -p $SAMPLE -d $SCRATCH_DIR/canu_output genomeSize=$GENOME_SIZE usegrid=0 ma
 
 mkdir -p $OUTPUT_DIR;
 cd $OUTPUT_DIR;
-rsync -ahrL $SCRATCH_DIR/canu_output .;
+rsync -ahrL $SCRATCH_DIR/canu_output/* .;
 

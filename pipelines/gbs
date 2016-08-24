@@ -39,6 +39,7 @@ cat ../raw/*/barcodes.tsv | awk '{print $1}' | sort | uniq >> samples.txt;
 ##[JOB] bowtie_mapping_population
 ##[CHANGE] bowtie_mapping_population	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/flash\":"
 ##[CHANGE] bowtie_mapping_population	sed "s:FLASH=\"NO\":FLASH=\"BOTH\":"
+##[CHANGE] bowtie_mapping_population	sed "s:BOWTIE_OPTIONS=\"--local\":BOWTIE_OPTIONS=\"--end-to-end\":"
 
 ##[JOB] bamtobed
 
