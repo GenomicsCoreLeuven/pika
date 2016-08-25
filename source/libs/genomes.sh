@@ -20,13 +20,25 @@ check_genome(){
                 correct=1;
         else
                 #a  name is given
-                if [ `ls -1 -d $GENOMEDIR/$1/ 2>/dev/null | wc -l` -eq 0 ];
+		if [[ "$1" =~ ^\/.* ]];
+		then
+			#alternative path to genome
+			GENOMEDIR=$1;
+
+		elif [[ "$GENOMEDIR" =~ .*$1$ ]];
+		then
+			#already correct path
+			GENOMEDIR="$GENOMEDIR";
+		else
+			GENOMEDIR="$GENOMEDIR/$1";
+		fi
+                if [ `ls -1 -d $GENOMEDIR/ 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #name does not exists
-                        echo "No genome and build found with this name";
+                        echo "No genome and build found with this name: $GENOMEDIR";
                         correct=1;
                 fi
-                if [ `ls -1 -d $GENOMEDIR/$1/ 2>/dev/null | wc -l` -gt 1 ];
+                if [ `ls -1 -d $GENOMEDIR/ 2>/dev/null | wc -l` -gt 1 ];
                 then
                         #multiple genomes for the name
                         echo "Multiple genomes and builds found with this name";

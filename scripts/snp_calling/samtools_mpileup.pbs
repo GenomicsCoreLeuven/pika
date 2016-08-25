@@ -1,0 +1,50 @@
+#!/bin/bash -l
+#PBS -l walltime=12:00:00
+#PBS -l mem=50gb
+#PBS -l nodes=1:ppn=20
+#PBS -M MAIL
+#PBS -m aeb
+#PBS -N samtools_mpileup 
+#PBS -A default_project
+##[VERSION] pika dev [here comes the version of pika where the last changes are made, pika dev for the development fase]
+##[HELP] This script will run mpileup on all bam files. This is a preparation step for VarScan or other variant calling software.
+##[HELP] Output is a mpileup file.
+##
+##[HOWTO] #Samtools mpileup
+##[HOWTO] #This script prepares variant calling using samtools mpileup
+##[HOWTO] #The command needed to execute is:
+##[HOWTO] qsub samtools_mpileup.pbs
+##[HOWTO] #Ideal is to test different parameters for the mpileup.
+
+#loading the modules
+source switch_to_2015a;
+module use /staging/leuven/stg_00019/software/modulefiles;
+module load SAMtools/1.1-intel-2015a;
+module load VarScan/v2.4.2-Java1.8.0_77;
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/mapped";
+OUTPUT_DIR="$PROJECT_DIR/mpileup";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+MPILEUP_OPTIONS="-B -d 2000 -Q 0";
+
+#the actual script
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+rsync -ahrL $SAMPLE_DIR/*ba? .;
+for i in `ls -1 -d *.bam`;
+do
+	echo $i >> bam_list.txt;
+done
+
+#creation of the mpileup
+samtools mpileup -f $GENOME_DIR/genome.fa -b bam_list.txt $MPILEUP_OPTIONS > result.mpileup;
+
+rm *.ba?;
+
+mkdir -p $OUTPUT_DIR;
+rsync -ahrL $TMP_DIR/* $OUTPUT_DIR;
+rm -r $TMP_DIR;

@@ -1,0 +1,51 @@
+#!/bin/bash -l
+#PBS -l walltime=12:00:00
+#PBS -l mem=50gb
+#PBS -l nodes=1:ppn=20
+#PBS -M MAIL
+#PBS -m aeb
+#PBS -N varscan
+#PBS -A default_project
+##[VERSION] pika dev [here comes the version of pika where the last changes are made, pika dev for the development fase]
+##[HELP] This script will run varscan2 on a mpileup file. This is ideal to do variant calling on pacbio data.
+##[HELP] Output are varscan files and vcf files.
+##
+##[HOWTO] #VarScan2
+##[HOWTO] #This script calls variants using VarScan2
+##[HOWTO] #The command needed to execute is:
+##[HOWTO] qsub varscan.pbs
+##[HOWTO] #Ideal is to test different parameters for the mpileup and varscan.
+
+#loading the modules
+source switch_to_2015a;
+module use /staging/leuven/stg_00019/software/modulefiles;
+module load VarScan/v2.4.2-Java1.8.0_77;
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/mpileup";
+OUTPUT_DIR="$PROJECT_DIR/varscan";
+SCRATCH_DIR=$VSC_SCRATCH_NODE;
+VARSCAN_OPTIONS="--min-avg-qual 0 --min-coverage 100 --min-freq-for-hom 0.8";
+
+#the actual script
+mkdir -p $SCRATCH_DIR;
+TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/result.mpileup .;
+
+#doing the variant calling
+VarScan mpileup2cns result.mpileup $VARSCAN_OPTIONS > result.varscan
+VarScan mpileup2cns result.mpileup $VARSCAN_OPTIONS --variants > result_variants_only.varscan
+
+#creation of the vcf files
+VarScan mpileup2cns result.mpileup $VARSCAN_OPTIONS --output-vcf > result.varscan.vcf
+VarScan mpileup2cns result.mpileup $VARSCAN_OPTIONS --variants --output-vcf > result_variants_only.varscan.vcf
+
+rm result.mpileup;
+
+mkdir -p $OUTPUT_DIR;
+rsync -ahrL $TMP_DIR/* $OUTPUT_DIR;
+rm -r $TMP_DIR;

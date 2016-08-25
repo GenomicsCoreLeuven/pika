@@ -1,0 +1,39 @@
+#PacBio Variant Calling pipeline
+
+##[HELP] The PacBio Variant Calling pipeline
+##[HELP] ===================================
+##[HELP] 
+##[HELP] The pipeline starts from one or multiple samples (in the raw directory)
+##[HELP] Samples should be subreads for low passes (passes<3), or CCS reads (passes>3)
+##[HELP] 
+##[HELP] For each sample, the overlapping reads are merged to fragments (flash)
+##[HELP] BWA is used for mapping the samples to the reference genome
+##[HELP] A mpileup file is created from these mapped data
+##[HELP] Variants are called with VarScan
+
+##[HOWTO] #This script describes how to execute the PacBio Variant Calling pipeline.
+##[HOWTO] #After the copy, a file will be generated with this info, together with the standard help.
+##[HOWTO] #Further more the generated file will contain all commands needed to launch the scripts on the HPC.
+##[HOWTO] #Together with short one line commands to generate needed files, and check temperary results.
+
+#needed modules:
+
+#Samples should be in the raw directory under the project
+#Samples should be gziped and named: samplename.R1.fastq.gz
+#gzip samples:
+gzip *fastq;
+#rename: (this will rename all gziped samples without R1.fastq.gz extention to one with this extention)
+for i in `ls -1 -d *.fastq.gz | grep -v '.R1.fastq.gz'`; do j=`echo $i | sed 's:.fastq:.R1.fastq:g'`; mv $i $j; done
+
+#create the samples.txt file:
+echo "SAMPLE" > samples.txt;
+ls -1 -d ../raw/*.R1.fastq.gz | sed 's:../raw/::g' | sed 's:.R1.fastq.gz::g' >> samples.txt;
+
+
+##[JOB] bwa_mapping_population
+##[CHANGE] bwa_mapping_population	sed "s:BWA_OPTIONS=\"\":BWA_OPTIONS=\"-x pacbio\":"
+
+##[JOB] samtools_mpileup
+
+##[JOB] varscan
+

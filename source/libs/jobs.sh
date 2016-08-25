@@ -81,12 +81,12 @@ copy_job(){
 			#copy the job, and change the standard values
 			cp $BASEDIR/../scripts/*/$1.* $PROJECT_DIR/jobs;
 			rm $PROJECT_DIR/jobs/$1.pbs;
-			cat $BASEDIR/../scripts/*/$1.pbs | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/$2\":" > $PROJECT_DIR/jobs/$prefix$1.pbs;
+			cat $BASEDIR/../scripts/*/$1.pbs | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" > $PROJECT_DIR/jobs/$prefix$1.pbs;
 			#change possible prologs
 			if [ -f $PROJECT_DIR/jobs/$1.prolog.sh ];
 			then
 				rm $PROJECT_DIR/jobs/$1.prolog.sh;
-				cat $BASEDIR/../scripts/*/$1.prolog.sh | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/$2\":" > $PROJECT_DIR/jobs/$prefix$1.prolog.sh;
+				cat $BASEDIR/../scripts/*/$1.prolog.sh | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" > $PROJECT_DIR/jobs/$prefix$1.prolog.sh;
 			fi
 			echo "Copied the job $1";
 		fi
