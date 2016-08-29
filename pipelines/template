@@ -10,13 +10,13 @@
 
 ##[HOWTO] #This is the howto of the pipeline.
 ##[HOWTO] #This howto will be added in the pipeline.howto file, created in the jobs directory (with pipeline, as the name of the pipeline)
-##[HOWTO] #All commands for the start of the jobs, and short onliners to edit needed data are inserted in this file
+##[HOWTO] #All commands for the start of the jobs, and short one-liners to edit needed data are inserted in this file
 
 #the job has the exact name of the pbs script.
 ##[JOB] hello world
-#the change follows imidiatly on the job it applies to. It is change,space,the name of the job, tab, the command to add in the pipe (usually a sed, awk, ...)
+#the change follows immediately on the job it applies to. It is change,space,the name of the job, tab, the command to add in the pipe (usually a sed, awk, ...)
 #In this case, the scratch directory is changed from the node scratch to the test folder in the data directory of the user
-##[CHANGE] hello_world	sed "s:SCRATCH_DIR=$VSC_SCRATCH_NODE:SCRATCH_DIR=$VSC_DATA/test:"
+##[CHANGE] hello_world	sed "s:SCRATCH_DIR=$VSC_SCRATCH_NODE:SCRATCH_DIR=\"$VSC_DATA/test\":"
 #Multiple change commands can follow on the same job.
 
 

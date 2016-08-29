@@ -81,9 +81,11 @@ set_jobs_dir(){
 		PROJECT_DIR=`pwd`;
 		mkdir -p jobs;
 		cd jobs;
+		JOBDIR=`pwd`;
 	else
 		#already in job dir, set projectdir
 		PROJECT_DIR=$(dirname $curdir);
+		JOBDIR=`pwd`;
 	fi
 }
 

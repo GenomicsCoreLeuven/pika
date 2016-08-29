@@ -23,7 +23,7 @@ module load bedtools/2.23.0-intel-2014a
 
 #Creation of the samples file:
 echo "SAMPLE" > samples.txt;
-cat ../raw/*/barcodes.tsv | awk '{print $1}' | sort | uniq >> samples.txt;
+cat ../../raw/*/barcodes.tsv | awk '{print $1}' | sort | uniq >> samples.txt;
 #
 
 ##[JOB] fastq_join
@@ -48,7 +48,7 @@ cat ../raw/*/barcodes.tsv | awk '{print $1}' | sort | uniq >> samples.txt;
 #you have to load the bedtools module
 MIN_SAMPLES="0";
 echo "REGION,NR" > regions.txt;
-cat ../bamtobed/*bed | sort -k1,1 -k2,2n | bedtools merge -c 1 -o count | awk -v minsamples=$MIN_SAMPLES '{if($4>minsamples){print $0}}' | awk '{print $1":"$2"-"$3","NR}' >> regions.txt;
+cat ../../bamtobed/*bed | sort -k1,1 -k2,2n | bedtools merge -c 1 -o count | awk -v minsamples=$MIN_SAMPLES '{if($4>minsamples){print $0}}' | awk '{print $1":"$2"-"$3","NR}' >> regions.txt;
 
 #
 #For large tasks it is adviced to split the regions.txt file.

@@ -18,11 +18,15 @@
 
 #needed modules:
 
+#all samples must be in the fastq dir of the project, named R1 and R2 (for read 1 and read 2), and must be gziped
 #Creation of the samples file: (for the multithreading, where 20 is the number of threads, change to 1 for single threading)
 echo "SAMPLE,THREADS" > samples.txt;
-cat ../raw/*/barcodes.tsv | awk '{print $1",20"}' | sort | uniq >> samples.txt;
+ls -1 -d ../../raw/*R1* | sed 's:../../::g' | sed 's:.R1.fastq.gz::g' | awk '{print $1",20"}' | sort | uniq >> samples.txt;
 #
 
+##[JOB] fastqc
+
+##[JOB] trimmomatic
 
 ##[JOB] sga_preprocess
 

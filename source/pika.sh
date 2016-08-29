@@ -10,6 +10,7 @@ MAIL="";
 BILLING="";
 PROJECT_DIR="";
 GENOMEDIR="";
+JOBDIR="";
 set_mail;
 set_billing;
 set_genome_dir;

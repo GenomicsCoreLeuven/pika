@@ -27,7 +27,7 @@ for i in `ls -1 -d *.fastq.gz | grep -v '.R1.fastq.gz'`; do j=`echo $i | sed 's:
 
 #create the samples.txt file:
 echo "SAMPLE" > samples.txt;
-ls -1 -d ../raw/*.R1.fastq.gz | sed 's:../raw/::g' | sed 's:.R1.fastq.gz::g' >> samples.txt;
+ls -1 -d ../../raw/*.R1.fastq.gz | sed 's:../../raw/::g' | sed 's:.R1.fastq.gz::g' >> samples.txt;
 
 
 ##[JOB] bwa_mapping_population

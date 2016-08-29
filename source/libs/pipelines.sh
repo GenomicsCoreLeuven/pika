@@ -68,6 +68,10 @@ copy_pipeline(){
         	then
 			#copy the pipeline, and change the standard values
 #TODO
+			#create a new pipeline directory into the jobs directory
+			mkdir -p $JOBDIR/$1;
+			JOBDIR="$JOBDIR/$1";
+			cd $JOBDIR;
 			#cat $BASEDIR/../pipelines/$1 | grep -v "##\[HELP\]" | grep -v "##\[CHANGE\]" | sed "s:##\[HOWTO\] ::g" > $1.howto;
 			IFS=$'\n';
 			job="";
