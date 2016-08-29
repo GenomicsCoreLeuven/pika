@@ -33,7 +33,7 @@ module load picard/2.2.2-Java1.8.0_77
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
-GENOME_DIR="$VSC_SCRATCH_NODE/genome/genome.fa";
+GENOME_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/raw";
 OUTPUT_DIR="$PROJECT_DIR/mapped";
 #this can be NO (for regular files), FLASH (for only flashed data) or BOTH (for both flashed and unflashed data)
@@ -44,8 +44,10 @@ THREADS="1";
 
 
 #the actual script
+GENOME_DIR="$GENOME_DIR/bwa/0.7.12/genome.fa";
 mkdir -p  $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
+TMPDIR=$SCRATCH_DIR;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
 rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fastq.gz $TMP_DIR/;

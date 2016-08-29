@@ -28,7 +28,8 @@ SCRATCH_DIR=$VSC_SCRATCH_NODE;
 
 #the actual script
 mkdir -p $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
+TMPDIR=$SCRATCH_DIR;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 rsync -ahr $SAMPLE_DIR/$SAMPLE.bam .;
 

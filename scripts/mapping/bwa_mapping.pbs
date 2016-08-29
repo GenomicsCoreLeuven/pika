@@ -44,7 +44,8 @@ GENOME_DIR="$SCRATCH_DIR/genome/genome.fa";
 
 #do the copy and the mapping
 cd $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
+TMPDIR=$SCRATCH_DIR;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
 rsync -ahr $SAMPLE_DIR/$SAMPLE*.fastq.gz $TMP_DIR/;

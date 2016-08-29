@@ -1,0 +1,46 @@
+#!/bin/bash -l
+#PBS -l walltime=3:00:00:00
+#PBS -l mem=120gb
+#PBS -l nodes=1:ppn=20:ivybridge
+#PBS -M MAIL
+#PBS -m eab
+#PBS -N sga_merge
+#PBS -A default_project
+##[VERSION] pika 16.08 
+##[HELP] This tool merges sga corrected data
+##[HELP] This script can be ran multithreaded (use the THREADS parameter)
+##[HELP] Runtime depends on the kmer and library size
+##
+##[HOWTO] #SGA merge
+##[HOWTO] #merges sga corrected data
+##[HOWTO] #start the module:
+##[HOWTO] qsub sga_merge.pbs
+module use /apps/leuven/thinking/2015a/modules/all 
+module load SGA/0.10.14-foss-2015a
+
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/sga_correct";
+OUTPUT_DIR="$PROJECT_DIR/sga_merge";
+SCRATCH_DIR="$PROJECT_DIR/tmp/sga_merge_output";
+THREADS="20";
+
+#the script
+mkdir -p $SCRATCH_DIR;
+TMPDIR=$SCRATCH_DIR;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+rsync -ahrL $SAMPLE_DIR/* .;
+gunzip *gz;
+
+READ_FILES="";
+for i in `ls -1 -d *fastq`;
+do
+	READ_FILES="$READ_FILES $i";
+done
+
+sga merge -r -t $THREADS -p final -p final $READ_FILES;
+
+gzip final.fastq;
+mkdir -p $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/* $OUTPUT_DIR/;
+rm -rf $TMP_DIR;

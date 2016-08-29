@@ -26,7 +26,8 @@ OUTPUT_DIR="$PROJECT_DIR/fastqc";
 
 #the actual script
 mkdir -p $SCRATCH_DIR;
-TMP_DIR=`mktemp -p $SCRATCH_DIR -d -t tmp.XXXXXXXX`;
+TMPDIR=$SCRATCH_DIR;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 mkdir -p $OUTPUT_DIR;
 cd $RUN_DIR/$RUN;
 for i in `ls -1 -d *.fastq.gz`;

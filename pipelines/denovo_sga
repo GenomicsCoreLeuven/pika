@@ -1,0 +1,50 @@
+#sga pipeline
+
+##[HELP] The SGA pipeline for denovo assembly of illumina data
+##[HELP] =====================================================
+##[HELP] 
+##[HELP] The pipeline starts from one or multiple runs (samples)
+##[HELP] After the preprocessing, preqc of the runs/libraries/samples are done. Here you can find premillary stats of the genome.
+##[HELP] 
+##[HELP] 
+##[HELP] 
+##[HELP] 
+##[HELP] 
+
+##[HOWTO] #This script describes how to execute the sga pipeline.
+##[HOWTO] #After the copy, a file will be generated with this info, together with the standard help.
+##[HOWTO] #Further more the generated file will contain all commands needed to launch the scripts on the HPC.
+##[HOWTO] #Together with short one line commands to generate needed files, and check temperary results.
+
+#needed modules:
+
+#Creation of the samples file: (for the multithreading, where 20 is the number of threads, change to 1 for single threading)
+echo "SAMPLE,THREADS" > samples.txt;
+cat ../raw/*/barcodes.tsv | awk '{print $1",20"}' | sort | uniq >> samples.txt;
+#
+
+
+##[JOB] sga_preprocess
+
+##[JOB] sga_preqc
+
+#You need to check the results of the preqc. This also includes the optimal kmer selection for the correction (you will have to change this in the sga_correct.pbs
+
+##[JOB] sga_correct
+
+##[JOB] sga_merge
+
+##[JOB] sga_filter
+
+##[JOB] sga_fmmerge
+
+##[JOB] sga_overlap
+
+##[JOB] sga_assemble
+
+#
+#
+#@TODO add scaffolding
+#
+#
+#
