@@ -35,7 +35,7 @@ cd $TMP_DIR;
 rsync -ahrL $SAMPLE_DIR/* .;
 gunzip *;
 
-sga fm-merge $FMERGE -t $THREADS final.filter.pass.fa;
+sga fm-merge $FMERGE_OPTIONS -t $THREADS final.filter.pass.fa;
 rm final.filter.pass.fa;
 sga rmdup -t $THREADS final.filter.pass.merged.fa;
 rm final.filter.pass.merged.fa;

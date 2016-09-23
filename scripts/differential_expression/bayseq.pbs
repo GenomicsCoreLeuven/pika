@@ -2,10 +2,10 @@
 #PBS -l walltime=6:00:00
 #PBS -l mem=30gb
 #PBS -l nodes=1:ppn=20:ivybridge
-#PBS -M MAIL
+#PBS -M koen.herten@kuleuven.be
 #PBS -m eab
-#PBS -N deseq
-#PBS -A default_project
+#PBS -N bayseq
+#PBS -A lp_biogenomics
 ##[VERSION] pika 16.08
 ##[HELP] This tool will do the differential expression analysis for the standard deseq algorithm
 ##[HELP] This script requires a sample_condition.csv file in the OUTPUT_DIR before start. This file is a comma seperated file with as heading: SAMPLE,CONDITION
@@ -16,29 +16,32 @@
 ##[HELP] Start R: R
 ##[HELP] Now you are in an R environment
 ##[HELP] add a new source to install new tools: source("https://bioconductor.org/biocLite.R")
-##[HELP] install DESeq: biocLite("DESeq")
+##[HELP] install DESeq2: biocLite("DESeq2")
+##[HELP] install pheatmap: biocLite("pheatmap")
+##[HELP] install pheatmap: biocLite("baySeq")
 ##[HELP] note that this is interactive, and will warn you that you cannot install it in the global directory. Just accept that it will be installed in your personal directory. Also choose the all option when asked to install the needed dependencies.
 ##[HELP] if gplots is not installed, you have to install it to: install.packages("gplots")
 ##[HELP] if vsn is not installed, you have to install it to (part of bioconductor): biocLite("vsn")
 ##
-##[HOWTO] #deseq
+##[HOWTO] #baSeqy
 ##[HOWTO] #Create a data file (conditions.txt), with a CONDITION1, CONDITION2 and a TYPE column
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
-##[HOWTO] #The DESeq module must be installed in your local R directory (see HELP for more info)
+##[HOWTO] #The baySeq module must be installed in your local R directory (see HELP for more info)
 ##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
 ##[HOWTO] module load worker/1.6.4-intel-2015a
 ##[HOWTO] #start the module:
-##[HOWTO] wsub -batch deseq.pbs -data conditions.txt 
+##[HOWTO] wsub -batch bayseq.pbs -data conditions.txt 
 #loading the modules
 source switch_to_2015a
-module load R/3.3.1-foss-2015a-tcl
+module load R
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/htseq";
-OUTPUT_DIR="$PROJECT_DIR/deseq";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+OUTPUT_DIR="$PROJECT_DIR/bayseq";
+SCRATCH_DIR="$VSC_SCRATCH/$PBS_JOBID";
 R_SCRIPT_DIR="$PROJECT_DIR/jobs";
+SAMPLE_CONDITIONS="$PROJECT_DIR/jobs/sample_conditions.csv";
 
 #the actual script
 COMP_NAME=$CONDITION1"_"$CONDITION2"_"$TYPE;
@@ -49,18 +52,15 @@ TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
 rsync -ahrL $SAMPLE_DIR/* .;
-rsync -ahrL $OUTPUT_DIR/sample_condition.csv .;
+rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
 
-awk -v FS="," -v OFS="," '{if(NR==1){print "LibraryName,LibraryLayout,condition,shortname,countf"}else{if(type=="strict"){file=".htseq_a10_genes_nostrand_union.counts"}else{file=".htseq_a0_genes_strand_intersectionNonempty.counts"} print $1,"RNAseq",$2,$1,$1""file;}}' sample_condition.csv > samples.csv;
+awk -v FS="," -v OFS="," '{if(NR==1){print "sampleName,fileName,condition"}else{if(type=="strict"){file=".htseq_a10_genes_nostrand_union.counts"}else{file=".htseq_a0_genes_strand_intersectionNonempty.counts"} print $1,$1""file,$2;}}' sample_condition.csv > samples.csv;
 
-Rscript $R_SCRIPT_DIR/deseq.2conditions.R $CONDITION1 $CONDITION2;
+Rscript $R_SCRIPT_DIR/bayseq.2conditions.R $CONDITION1 $CONDITION2 > $COMP_NAME".rscript.log" 2> $COMP_NAME".rscript.log";
 
 rm *counts;
 
 mkdir -p $OUTPUT_DIR/$COMP_NAME;
 cd $OUTPUT_DIR/$COMP_NAME;
 rsync -ahrL $TMP_DIR/* .;
-
 rm -r $TMP_DIR;
-
-

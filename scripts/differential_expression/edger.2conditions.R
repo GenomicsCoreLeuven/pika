@@ -1,4 +1,5 @@
 library("edgeR")
+library(methods)
 args = commandArgs(trailingOnly = TRUE)
 condition1 <- args[1]
 condition2 <- args[2]
