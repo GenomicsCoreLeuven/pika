@@ -23,6 +23,16 @@
 ##[HOWTO] wsub -batch bowtie_mapping_population.pbs -data samples.txt -prolog bowtie_mapping_population.prolog.sh
 ##[HOWTO] #When the THREADS variable in this script is changed, this can be ran as multithreaded population mapping, start like this (replace 20 with the number of given threads):
 ##[HOWTO] wsub -batch bowtie_mapping_population.pbs -data samples.txt -prolog bowtie_mapping_population.prolog.sh -threaded 20
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] flash: use regular files (NO), only flashed (FLASH) or flashed and unflashed (BOTH)
+##[OPTIONS] flash	optional	sed "s:FLASH=\"NO\":FLASH=\"value\":g"
+##[HELP] bowtie_options: change the options of the mapper (standard: --local)
+##[OPTIONS] bowtie_options	optional	sed "s:BOWTIE_OPTIONS=\"--local\":BOWTIE_OPTIONS=\"value\":g"
+
+
 #loading the modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module use /staging/leuven/stg_00019/software/modulefiles
@@ -45,6 +55,11 @@ THREADS="1";
 BOWTIE_OPTIONS="--local";
 
 #the actual script
+if [ "$FLASH" -ne "NO" ];
+then
+        SAMPLE_DIR="$PROJECT_DIR/flash";
+fi
+
 GENOME_DIR="$GENOME_DIR/bowtie2/2.2.4/genome";
 mkdir -p $SCRATCH_DIR;
 TMPDIR=$SCRATCH_DIR;

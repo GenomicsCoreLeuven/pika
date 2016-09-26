@@ -15,6 +15,12 @@
 ##[HOWTO] #The command needed to execute is:
 ##[HOWTO] qsub samtools_mpileup.pbs
 ##[HOWTO] #Ideal is to test different parameters for the mpileup.
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] mpileup_options: the options for mpileup (standard= -B -d 2000 -Q 0)
+##[OPTIONS] mpileup_options	optional	sed "s:MPILEUP_OPTIONS=\"-B -d 2000 -Q 0\":MPILEUP_OPTIONS=\"value\":g"
 
 #loading the modules
 source switch_to_2015a;

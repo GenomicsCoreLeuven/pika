@@ -29,6 +29,10 @@
 ##[HOWTO] module load worker/1.6.4-intel-2015a
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch deseq.pbs -data conditions.txt 
+##[HELP] Options:
+##[HELP] sample_conditions: the full path to the sample conditions file
+##[OPTIONS] sample_conditions	optional	sed 's:SAMPLE_CONDITIONS=\"\$PROJECT_DIR/jobs/sample_conditions.csv\":SAMPLE_CONDITIONS=\"value\":g'
+
 #loading the modules
 source switch_to_2015a
 module load R/3.3.1-foss-2015a-tcl
@@ -39,6 +43,7 @@ SAMPLE_DIR="$PROJECT_DIR/htseq";
 OUTPUT_DIR="$PROJECT_DIR/deseq";
 SCRATCH_DIR=$VSC_SCRATCH_NODE;
 R_SCRIPT_DIR="$PROJECT_DIR/jobs";
+SAMPLE_CONDITIONS="$PROJECT_DIR/jobs/sample_conditions.csv";
 
 #the actual script
 COMP_NAME=$CONDITION1"_"$CONDITION2"_"$TYPE;
@@ -49,7 +54,7 @@ TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
 rsync -ahrL $SAMPLE_DIR/* .;
-rsync -ahrL $OUTPUT_DIR/sample_condition.csv .;
+rsync -ahrL $SAMPLE_CONDITIONS .;
 
 awk -v FS="," -v OFS="," '{if(NR==1){print "LibraryName,LibraryLayout,condition,shortname,countf"}else{if(type=="strict"){file=".htseq_a10_genes_nostrand_union.counts"}else{file=".htseq_a0_genes_strand_intersectionNonempty.counts"} print $1,"RNAseq",$2,$1,$1""file;}}' sample_condition.csv > samples.csv;
 

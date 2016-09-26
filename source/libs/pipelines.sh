@@ -10,7 +10,7 @@ show_pipelines(){
 
 
 show_pipeline_help(){
-	check_pipeline $1;
+	check_pipeline_exists $1;
 	correct_pipeline=$?;
 	if [ "$correct_pipeline" == 0 ]
 	then
@@ -20,7 +20,7 @@ show_pipeline_help(){
 }
 
 show_pipeline_howto(){
-	check_pipeline $1;
+	check_pipeline_exists $1;
         correct_pipeline=$?;
         if [ "$correct_pipeline" == 0 ]
         then
@@ -29,45 +29,96 @@ show_pipeline_howto(){
         fi
 }
 
-check_pipeline(){
-	correct=0;
-	if [ $# -eq 0 ];
+
+check_pipeline_exists(){
+	correct_pipeline=0;
+        if [ $# -eq 0 ];
         then
                 echo "No parameter given";
-		correct=1;
+                correct_pipeline=1;
         else
                 #a pipeline is given
                 if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #pipeline does not exists
                         echo "No pipeline found with this name";
-			correct=1;
+                        correct_pipeline=1;
+                fi
+                if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -gt 1 ];
+                then
+                        #multiple pipelines for the name
+                        echo "Multiple pipelines found with this name";
+                        correct_pipeline=1;
+                fi
+        fi
+        return "$correct_pipeline";
+}
+
+check_pipeline(){
+	correct_pipeline=0;
+	if [ $# -eq 0 ];
+        then
+                echo "No parameter given";
+		correct_pipeline=1;
+        else
+                #a pipeline is given
+                if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -eq 0 ];
+                then
+                        #pipeline does not exists
+                        echo "No pipeline found with this name";
+			correct_pipeline=1;
                 fi
 		if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -gt 1 ];
 		then
 			#multiple pipelines for the name
 			echo "Multiple pipelines found with this name";
-			correct=1;
+			correct_pipeline=1;
+		fi
+		if [ "$correct_pipeline" -eq 0 ];
+		then
+			#correct pipeline
+			echo "checking jobs mandatory parameters";
+			joblist=(`grep "##\[JOB\]" $BASEDIR/../pipelines/$1 | awk '{if(NR==1){list=$2}else{list=list" "$2}}END{print list;}'`);
+			for job in "${joblist[@]}";
+			do
+				check_job $job;
+				outcome=$?;
+				if [ "$outcome" -eq "1" ];
+				then
+					correct_pipeline=1;
+				fi
+			done
 		fi
         fi
-	return "$correct";
+	return "$correct_pipeline";
 }
 
 
 copy_pipeline(){
 	#parameters must be pipeline, and species/build
-	if [ $# -ne 2 ];
+	if [ $# -lt 1 ];
 	then
-		echo "All copies must have a pipeline and a species/build";
+		echo "All copies must have a pipeline";
 	else
+		echo "Checking pipeline";
 		check_pipeline $1;
 		correct_pipeline=$?;
-		check_genome $2;
+		echo "Checking genome";
+                #check if genome exists and is needed
+                arrayContainsElement "genome" "${OPTION_ARRAY[@]}";
+                containsGenome=$?;
+                if [ "$containsGenome" == 0 ];
+                then
+                        check_genome ${VALUE_ARRAY["genome"]};
+                        correct_species=$?;
+                else
+                        correct_species=0;
+                fi
 		correct_species=$?;
 		if [ "$correct_pipeline" == 0 ] && [ "$correct_species" == 0 ]
         	then
 			#copy the pipeline, and change the standard values
-#TODO
+			echo "Copy the pipeline";
 			#create a new pipeline directory into the jobs directory
 			mkdir -p $JOBDIR/$1;
 			JOBDIR="$JOBDIR/$1";
@@ -84,7 +135,7 @@ copy_pipeline(){
 						jobNR=$((jobNR+1));
 						job=`echo $line | sed 's:##\[JOB\] ::g'`;
 						prefix="step"$jobNR"_";
-						copy_job $job $2 $prefix;
+						copy_job $job;
 						#insert the howto of the job into the howto of the pipeline
 						echo "" >> $1.howto;
 						grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$job.pbs | sed "s:##\[HOWTO\] ::g" | sed "s:$job:$prefix$job:g" >> $1.howto;

@@ -18,6 +18,12 @@
 ##[HOWTO] module load worker/1.6.4-intel-2015a
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch trimmomatic.pbs -data samples.txt -threaded 20
+
+##[HELP] Options:
+##[HELP] is_rna: yes if the rna trimming must be used (poly AAAA) (for quantseq)
+##[OPTIONS] is_rna	optional	sed 's:IS_RNA=\"no\":IS_RNA=\"value\":g'
+
+
 #loading the modules
 module use /staging/leuven/stg_00019/software/modulefiles
 module load trimmomatic/0.36-Java1.8.0_77;

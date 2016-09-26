@@ -15,6 +15,10 @@
 ##[HOWTO] #The command needed to execute is:
 ##[HOWTO] qsub varscan.pbs
 ##[HOWTO] #Ideal is to test different parameters for the mpileup and varscan.
+##
+##[HELP] Options:
+##[HELP] varscan_options: the options for varscan (standard= --min-avg-qual 0 --min-coverage 100 --min-freq-for-hom 0.8)
+##[OPTIONS] varscan_options	optional	sed "s:VARSCAN_OPTIONS=\"--min-avg-qual 0 --min-coverage 100 --min-freq-for-hom 0.8\":VARSCAN_OPTIONS=\"value\":g"
 
 #loading the modules
 source switch_to_2015a;
@@ -23,7 +27,6 @@ module load VarScan/v2.4.2-Java1.8.0_77;
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
-GENOME_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/mpileup";
 OUTPUT_DIR="$PROJECT_DIR/varscan";
 SCRATCH_DIR=$VSC_SCRATCH_NODE;

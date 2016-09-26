@@ -19,6 +19,11 @@
 ##[HOWTO] module load worker/1.6.4-intel-2015a
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch flash.pbs -data samples.txt
+
+##[HELP] Options:
+##[HELP] use_trimmomatic: yes if the result needed to use is a trimmomatic result
+##[OPTIONS] use_trimmomatic	optional	sed 's:IS_TRIMMOMATIC=\"no\":IS_TRIMMOMATIC=\"value\":g'
+
 #loading the modules
 module load FLASH/1.2.10
 

@@ -18,6 +18,14 @@
 ##[HOWTO] module load worker/1.5.2-intel-2014a
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch htseq.pbs -data samples.txt
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] ensembl: version of the ensembl to use (standard current link)
+##[OPTIONS] ensembl	mandatory	sed "s:ENSEMBL=\"current\":ENSEMBL=\"value\":g"
+##[HELP] strict: yes for the strict counting, no for flexible counting
+##[OPTIONS] strict	optional	sed "s:STRICT=\"yes\":STRICT=\"value\":g"
 
 #loading the modules
 module load SAMtools/0.1.19-intel-2014a;
@@ -26,10 +34,11 @@ module load HTSeq/0.6.1p1-intel-2014a-Python-2.7.6;
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
 GENOME_DIR="";
+ENSEMBL="current";
 SAMPLE_DIR="$PROJECT_DIR/mapped";
 OUTPUT_DIR="$PROJECT_DIR/htseq";
 SCRATCH_DIR=$VSC_SCRATCH_NODE;
-GENES_ANNOTATION_FILE="$GENOME_DIR/Ensembl/current/genes.gtf";
+GENES_ANNOTATION_FILE="$GENOME_DIR/Ensembl/$ENSEMBL/genes.gtf";
 #strict (yes), flexible (no)
 STRICT="yes";
 

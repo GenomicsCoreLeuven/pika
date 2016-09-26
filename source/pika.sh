@@ -6,6 +6,7 @@ source $LIB_DIR/variables_and_settings.sh;
 source $LIB_DIR/jobs.sh;
 source $LIB_DIR/genomes.sh;
 source $LIB_DIR/pipelines.sh;
+source $LIB_DIR/extra_code.sh;
 MAIL="";
 BILLING="";
 PROJECT_DIR="";
@@ -75,6 +76,20 @@ if [ "$#" -eq 0 ]
 then
     show_help;
 else
+	i=0;
+	declare -A OPTION_ARRAY;
+	declare -A VALUE_ARRAY;
+	for a in "$@"; 
+	do
+		if (($i>=3));
+		then
+		key=`echo "$a"| awk -v FS="=" '{print $1;}'`;
+		value=`echo "$a" | awk -v FS="=" '{print $2;}'`;
+		OPTION_ARRAY[$i-3]=$key;
+		VALUE_ARRAY[$key]=$value;
+		fi
+		((i++));
+	done
     case "$1" in
         help)
             show_help;
@@ -123,7 +138,7 @@ else
 			;;
 			copy)
 				set_jobs_dir;
-                                copy_job $3 $4;
+                                copy_job $3;
 			;;
 			*)
 				echo "Usage: $0 job {list|help|howto|copy}";
@@ -144,7 +159,7 @@ else
 			;;
 			copy)
 				set_jobs_dir;
-				copy_pipeline $3 $4;
+				copy_pipeline $3;
 			;;
 			*)
 				echo "Usage: $0 pipeline {list|help|howto|copy}";

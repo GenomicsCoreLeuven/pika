@@ -23,7 +23,7 @@
 ##[HELP] if gplots is not installed, you have to install it to: install.packages("gplots")
 ##[HELP] if vsn is not installed, you have to install it to (part of bioconductor): biocLite("vsn")
 ##
-##[HOWTO] #baSeqy
+##[HOWTO] #baySeq
 ##[HOWTO] #Create a data file (conditions.txt), with a CONDITION1, CONDITION2 and a TYPE column
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
 ##[HOWTO] #The baySeq module must be installed in your local R directory (see HELP for more info)
@@ -31,6 +31,12 @@
 ##[HOWTO] module load worker/1.6.4-intel-2015a
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch bayseq.pbs -data conditions.txt 
+
+##[HELP] Options:
+##[HELP] sample_conditions: the full path to the sample conditions file
+##[OPTIONS] sample_conditions	optional	sed 's:SAMPLE_CONDITIONS=\"\$PROJECT_DIR/jobs/sample_conditions.csv\":SAMPLE_CONDITIONS=\"value\":g'
+
+
 #loading the modules
 source switch_to_2015a
 module load R

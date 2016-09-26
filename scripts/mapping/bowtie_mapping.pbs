@@ -16,6 +16,17 @@
 ##[HOWTO] #The sample, flash and genome directory needs to be changed
 ##[HOWTO] #start the module:
 ##[HOWTO] qsub bowtie_mapping.pbs
+
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] flash: use regular files (NO), only flashed (FLASH) or flashed and unflashed (BOTH)
+##[OPTIONS] flash	optional	sed "s:FLASH=\"NO\":FLASH=\"value\":g"
+##[HELP] bowtie_options: change the options of the mapper (standard: --local)
+##[OPTIONS] bowtie_options	optional	sed "s:BOWTIE_OPTIONS=\"--local\":BOWTIE_OPTIONS=\"value\":g"
+
+
+
 #loading the modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module use /staging/leuven/stg_00019/software/modulefiles
@@ -36,6 +47,11 @@ THREADS="20";
 #options can be --local or --end-to-end (more options see bowtie2 manual)
 #local is ideal for genome data, end is ideal for gbs, quantseq, ...
 BOWTIE_OPTIONS="--local";
+
+if [ "$FLASH" -ne "NO" ];
+then
+	SAMPLE_DIR="$PROJECT_DIR/flash";
+fi
 
 #the actual script
 mkdir -p $SCRATCH_DIR/genome;

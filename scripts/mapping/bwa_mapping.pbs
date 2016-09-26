@@ -16,6 +16,18 @@
 ##[HOWTO] #edit in this script the sample, flash and genome directory
 ##[HOWTO] #start the module:
 ##[HOWTO] qsub bwa_mapping.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] flash: use regular files (NO), only flashed (FLASH) or flashed and unflashed (BOTH)
+##[OPTIONS] flash	optional	sed "s:FLASH=\"NO\":FLASH=\"value\":g"
+##[HELP] bwa_options: change the options of the mapper (standard: )
+##[OPTIONS] bwa_options	optional	sed "s:BWA_OPTIONS=\"\":BWA_OPTIONS=\"value\":g"
+##[HELP] sample: the name of the sample
+##[OPTIONS] sample	mandatory	sed "s:SAMPLE=\"\":SAMPLE\"value\":g"
+
+
 #loading the modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module use /staging/leuven/stg_00019/software/modulefiles
@@ -36,6 +48,12 @@ SAMPLE="";
 BWA_OPTIONS="";
 
 #the actual script
+if [ "$FLASH" -ne "NO" ];
+then
+        SAMPLE_DIR="$PROJECT_DIR/flash";
+fi
+
+
 mkdir -p $SCRATCH_DIR/genome;
 cd $SCRATCH_DIR/genome;
 rsync -ahrL $GENOME_DIR/* .;

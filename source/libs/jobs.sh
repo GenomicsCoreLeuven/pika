@@ -14,7 +14,7 @@ show_jobs(){
 
 
 show_job_help(){
-	check_job $1;
+	check_job_exists $1;
 	correct_job=$?;
 	if [ "$correct_job" == 0 ]
 	then
@@ -25,7 +25,7 @@ show_job_help(){
 }
 
 show_job_howto(){
-	check_job $1;
+	check_job_exists $1;
         correct_job=$?;
         if [ "$correct_job" == 0 ]
         then
@@ -33,6 +33,31 @@ show_job_howto(){
                 #correct job
                 grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$1.pbs | sed 's/##\[HOWTO\] /\t/g';
         fi
+}
+
+check_job_exists(){
+	correct=0;
+	if [ $# -eq 0 ];
+	then
+		echo "No parameter given";
+		correct=1;
+	else
+		#a jobname is given
+                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -eq 0 ];
+                then
+                        #jobname does not exists
+                        echo "No job found with this name: $1";
+                        correct=1;
+                fi
+                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -gt 1 ];
+                then
+                        #multiple job for the name
+                        echo "Multiple jobs found with this name: $1";
+                        correct=1;
+                fi
+
+        fi
+        return "$correct";
 }
 
 check_job(){
@@ -46,14 +71,29 @@ check_job(){
                 if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #jobname does not exists
-                        echo "No job found with this name";
+                        echo "No job found with this name: $1";
 			correct=1;
                 fi
 		if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -gt 1 ];
 		then
 			#multiple job for the name
-			echo "Multiple jobs found with this name";
+			echo "Multiple jobs found with this name: $1";
 			correct=1;
+		fi
+		if [ "$correct" -eq 0 ];
+		then
+			#check the options
+			optionList=(`grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.pbs | grep "mandatory" | awk '{if(NR==1){list=$2;}else{list=list" "$2}}END{print list;}'`);
+			for neededOption in "${optionList[@]}";
+			do
+				arrayContainsElement "$neededOption" "${OPTION_ARRAY[@]}";
+				contains=$?;
+				if [ "$contains" == 1 ];
+				then
+				echo "The mandatory options $neededOption for job $1 is missing";
+				correct=1;
+				fi
+			done
 		fi
         fi
 	return "$correct";
@@ -62,19 +102,30 @@ check_job(){
 
 copy_job(){
 	#parameters must be job, and species/build
-	if [ $# -lt 2 ];
+echo "job:" $1;
+	if [ $# -lt 1 ];
 	then
-		echo "All copies must have a jobname and a species/build";
+		echo "All copies must have a jobname";
 	else
 		check_job $1;
 		correct_job=$?;
-		check_genome $2;
-		correct_species=$?;
+		#check if genome exists and is needed
+		arrayContainsElement "genome" "${OPTION_ARRAY[@]}";
+		containsGenome=$?;		
+		if [ "$containsGenome" == 0 ];
+		then
+			check_genome ${VALUE_ARRAY["genome"]};
+			correct_species=$?;
+		else
+			correct_species=0;
+		fi
 		prefix="";
-		if [ $# -ge 3 ];
+		arrayContainsElement "prefix" "${OPTION_ARRAY[@]}";
+		containsPrefix=$?;
+		if [ "$containsPrefix" == 0 ];
 		then
 			#has prefix
-			prefix=$3;
+			prefix=${VALUE_ARRAY["prefix"]};
 		fi
 		if [ "$correct_job" == 0 ] && [ "$correct_species" == 0 ];
         	then
@@ -82,6 +133,23 @@ copy_job(){
 			cp $BASEDIR/../scripts/*/$1.* $JOBDIR;
 			rm $JOBDIR/$1.pbs;
 			cat $BASEDIR/../scripts/*/$1.pbs | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" > $JOBDIR/$prefix$1.pbs;
+
+			#change the options
+			for option in "${OPTION_ARRAY[@]}";
+			do
+				if [ "$option" != "genome" ];
+				then
+				value="${VALUE_ARRAY["$option"]}";
+				action=`grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.pbs | grep $option | awk -v FS='\t' '{print $3}' | sed "s:value:$value:"`;
+				if [ ! -z "$action" ];
+				then
+					echo "cat $JOBDIR/$prefix$1.pbs | $action > $JOBDIR/$prefix$1.pbs.tmp" | sh;
+					mv $JOBDIR/$prefix$1.pbs.tmp $JOBDIR/$prefix$1.pbs;
+					fi
+				fi
+			done
+
+
 			#change possible prologs
 			if [ -f $JOBDIR/$1.prolog.sh ];
 			then
@@ -91,4 +159,8 @@ copy_job(){
 			echo "Copied the job $1";
 		fi
 	fi
+
+
+
+
 }

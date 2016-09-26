@@ -25,6 +25,16 @@
 ##[HOWTO] wsub -batch freebayes_regions.pbs -data regions.txt
 ##[HOWTO] #merge the vcf files later, see alse that script to change the parameters
 ##[HOWTO] qsub merge_vcf.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] freebayes_options: the options for freebayes (standard= -m 15 -q 15 --use-duplicate-reads --ploidy 2)
+##[OPTIONS] freebayes_options	optional	sed "s:FREEBAYES_OPTIONS=\"-m 15 -q 15 --use-duplicate-reads --ploidy 2\":FREEBAYES_OPTIONS=\"value\":g"
+##[HELP] freebayes_output_name: the name in the freebayes output
+##[OPTIONS] freebayes_output_name	optional	sed "s:OUTPUT_PART=\".m15.q15.useduplicates.ploidy2\":OUTPUT_PART=\"\":"
+
+
 #loading the modules
 module load freebayes/1.0.2-33-foss-2015a
 
@@ -33,7 +43,8 @@ PROJECT_DIR="";
 GENOME_DIR="";
 BAM_DIR="$PROJECT_DIR/mapped";
 FREEBAYES_OPTIONS="-m 15 -q 15 --use-duplicate-reads --ploidy 2 ";
-FREEBAYES_OUTPUT_FILE_NAME="freebayes.m15.q15.useduplicates.ploidy2_"$NR".vcf";
+OUTPUT_PART=".m15.q15.useduplicates.ploidy2";
+FREEBAYES_OUTPUT_FILE_NAME="freebayes"$OUTPUT_PART"_"$NR".vcf";
 OUTPUT_DIR="$PROJECT_DIR/snp_calling/parts";
 SCRATCH_DIR="$OUTPUT_DIR/tmp";
 

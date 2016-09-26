@@ -30,6 +30,11 @@
 ##[HOWTO] module load worker/1.6.4-intel-2015a
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch deseq2.pbs -data conditions.txt 
+
+##[HELP] Options:
+##[HELP] sample_conditions: the full path to the sample conditions file
+##[OPTIONS] sample_conditions	optional	sed 's:SAMPLE_CONDITIONS=\"\$PROJECT_DIR/jobs/sample_conditions.csv\":SAMPLE_CONDITIONS=\"value\":g'
+
 #loading the modules
 source switch_to_2015a
 module load R
