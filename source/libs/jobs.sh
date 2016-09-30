@@ -83,7 +83,13 @@ check_job(){
 		if [ "$correct" -eq 0 ];
 		then
 			#check the options
-			optionList=(`grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.pbs | grep "mandatory" | awk '{if(NR==1){list=$2;}else{list=list" "$2}}END{print list;}'`);
+			declare -A optionList;
+			optionCount=0;
+			for option in `grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.pbs | grep "mandatory" | awk '{print $2;}'`;
+			do
+				optionList[$optionCount]="$option";
+				optionCount=$((optionCount+1));
+			done 
 			for neededOption in "${optionList[@]}";
 			do
 				arrayContainsElement "$neededOption" "${OPTION_ARRAY[@]}";
@@ -102,7 +108,6 @@ check_job(){
 
 copy_job(){
 	#parameters must be job, and species/build
-echo "job:" $1;
 	if [ $# -lt 1 ];
 	then
 		echo "All copies must have a jobname";

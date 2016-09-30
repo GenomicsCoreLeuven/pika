@@ -27,7 +27,7 @@ ls -1 -d ../../raw/*R1* | sed 's:../../::g' | sed 's:.R1.fastq.gz::g' | awk '{pr
 ##[JOB] fastqc
 ##[CHANGE] fastqc	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/fastq_join\":"
 
-##[JOB] star_mapping_population 
+##[JOB] star_mapping_population
 
 # once for the strict counts (both htseq jobs can run simultanious)
 ##[JOB] htseq
@@ -37,7 +37,11 @@ ls -1 -d ../../raw/*R1* | sed 's:../../::g' | sed 's:.R1.fastq.gz::g' | awk '{pr
 ##[CHANGE] htseq	sed "s:STRICT=\"yes\":STRICT=\"no\":"
 
 # After the htseq jobs are finished, a summary can be created with this one-liner:
-for i in `cat samples.txt | grep -v SAMPLE | sed 's/,20//g'`; do echo $i; grep 'Input' ../../trimmomatic/$i.log | awk '{split($0, arr, " "); print "Total reads: "arr[3]; print "Kept after trimming: "arr[5]}'; tail -n 3 ../../mapped/$i.bowtie2.log | awk '{if($0~"exactly"){print "Uniquely mapped: " $1;}else{print "Multi-mapping: "$1;}}' | head -n 2; head -n -5 ../../htseq/$i.htseq_a0_genes_strand_intersectionNonempty.counts | awk '{sum+=$2}END{print "Flexible usable: "sum;}'; head -n -5 ../../htseq/$i.htseq_a10_genes_nostrand_union.counts | awk '{sum+=$2}END{print "Strict usable: "sum;}'; done | awk 'BEGIN{print "SAMPLE\tTotal Reads\tKept after Trimming\tMapped Unique\tMultiMapping\tUseable For DE (flexible)\tUseable For DE (strict)"}{if(NR%7==1){if(line != ""){print line;} line=$1;}else{split($0,arr,":"); line=line"\t"arr[2]}}END{print line;}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR==1){$8=$7; $7=$6; $6="Total Mapped"}else{$8=$7; $7=$6; $6=$4+$5;} print $0}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR!=1){for(i=3;i<=NF;i++){$i=$i" ("($i/$2*100)"%)";}} print $0;}' > summary.tsv
+for i in `cat samples.txt | grep -v SAMPLE | sed 's/,20//g'`; do echo $i; grep 'Input' ../../trimmomatic/$i.log | awk '{split($0, arr, " "); print "Total reads: "arr[3]; print "Kept after trimming: "arr[5]}'; cat "../../mapped/"$i"Log.final.out" | awk -v FS="|" '{if($0~"Uniquely mapped reads number"){print "Uniquely mapped: " $2;}if($0~"Number of reads mapped to multiple loci"){multimap+=$2;}if($0~"Number of reads mapped to too many loci"){multimap+=$2}}END{print "Multi-mapping: "multimap;}' | sed "s:\t::g" | head -n 2; head -n -5 ../../htseq/$i.htseq_a0_genes_strand_intersectionNonempty.counts | awk '{sum+=$2}END{print "Flexible usable: "sum;}'; head -n -5 ../../htseq/$i.htseq_a10_genes_nostrand_union.counts | awk '{sum+=$2}END{print "Strict usable: "sum;}'; done | awk 'BEGIN{print "SAMPLE\tTotal Reads\tKept after Trimming\tMapped Unique\tMultiMapping\tUseable For DE (flexible)\tUseable For DE (strict)"}{if(NR%7==1){if(line != ""){print line;} line=$1;}else{split($0,arr,":"); line=line"\t"arr[2]}}END{print line;}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR==1){$8=$7; $7=$6; $6="Total Mapped"}else{$8=$7; $7=$6; $6=$4+$5;} print $0}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR!=1){for(i=3;i<=NF;i++){$i=$i" ("($i/$2*100)"%)";}} print $0;}' > summary.tsv
+
+
+
+#for i in `cat samples.txt | grep -v SAMPLE | sed 's/,20//g'`; do echo $i; grep 'Input' ../../trimmomatic/$i.log | awk '{split($0, arr, " "); print "Total reads: "arr[3]; print "Kept after trimming: "arr[5]}'; tail -n 3 ../../mapped/$i.bowtie2.log | awk '{if($0~"exactly"){print "Uniquely mapped: " $1;}else{print "Multi-mapping: "$1;}}' | head -n 2; head -n -5 ../../htseq/$i.htseq_a0_genes_strand_intersectionNonempty.counts | awk '{sum+=$2}END{print "Flexible usable: "sum;}'; head -n -5 ../../htseq/$i.htseq_a10_genes_nostrand_union.counts | awk '{sum+=$2}END{print "Strict usable: "sum;}'; done | awk 'BEGIN{print "SAMPLE\tTotal Reads\tKept after Trimming\tMapped Unique\tMultiMapping\tUseable For DE (flexible)\tUseable For DE (strict)"}{if(NR%7==1){if(line != ""){print line;} line=$1;}else{split($0,arr,":"); line=line"\t"arr[2]}}END{print line;}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR==1){$8=$7; $7=$6; $6="Total Mapped"}else{$8=$7; $7=$6; $6=$4+$5;} print $0}' | awk 'BEGIN{OFS="\t"; FS="\t"}{if(NR!=1){for(i=3;i<=NF;i++){$i=$i" ("($i/$2*100)"%)";}} print $0;}' > summary.tsv
 # To view it efficiently: (exit pressing q)
 cat summary.tsv | column -ts $'\t' | less -#2 -N -S -R
 

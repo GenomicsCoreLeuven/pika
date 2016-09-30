@@ -21,7 +21,7 @@
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)
-##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[OPTIONS] genome	mandatory	sed "s:GENOME_DIR=\"\":GENOME_DIR=\"value\":g"
 ##[HELP] ensembl: version of the ensembl to use (standard current link)
 ##[OPTIONS] ensembl	mandatory	sed "s:ENSEMBL=\"current\":ENSEMBL=\"value\":g"
 ##[HELP] strict: yes for the strict counting, no for flexible counting

@@ -54,17 +54,18 @@ rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fastq.gz $TMP_DIR/;
 gunzip *gz;
 FASTQ_FILES="";
 
-STAR --runMode alignReads --runThreadN $THREADS --genomeDir $GENOME_DIR --readFilesIn $SAMPLE.R1.fastq --outSAMtype BAM SortedByCoordinate --outFileNamePrefix $TMP_DIR/$SAMPLE --quantMode GeneCounts;
+STAR --runMode alignReads --runThreadN $THREADS --genomeDir $GENOME_DIR --readFilesIn $SAMPLE.R1.fastq --outSAMtype BAM SortedByCoordinate --outFileNamePrefix $TMP_DIR/$SAMPLE;
 rm *fastq;
 
 #samtools view -bS -@ $THREADS $TMP_DIR/mapped.sam > $TMP_DIR/mapped.bam;
 #rm -r $TMP_DIR/mapped.sam;
 #samtools sort -@ $THREADS $TMP_DIR/mapped.bam $TMP_DIR/$SAMPLE.sorted;
-#samtools index -b $TMP_DIR/$SAMPLE.bam;
+mv $SAMPLE"Aligned.sortedByCoord.out.bam" $SAMPLE".bam";
+samtools index -b $TMP_DIR/$SAMPLE.bam;
 #rm -r $TMP_DIR/mapped.bam;
 
 #run picard tools for correcting readgroups...
-#picard AddOrReplaceReadGroups I=$TMP_DIR/$SAMPLE.sorted.bam O=$TMP_DIR/$SAMPLE.bam RGID=$SAMPLE RGLB=$SAMPLE RGPL=illumina RGSM=$SAMPLE RGPU=$SAMPLE RGCN=GenomicsCoreLeuven CREATE_INDEX=TRUE;
+picard AddOrReplaceReadGroups I=$TMP_DIR/$SAMPLE.sorted.bam O=$TMP_DIR/$SAMPLE.bam RGID=$SAMPLE RGLB=$SAMPLE RGPL=illumina RGSM=$SAMPLE RGPU=$SAMPLE RGCN=GenomicsCoreLeuven CREATE_INDEX=TRUE;
 
 #rm $TMP_DIR/$SAMPLE.sorted.bam;
 

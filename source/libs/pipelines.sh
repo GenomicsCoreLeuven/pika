@@ -135,6 +135,13 @@ copy_pipeline(){
 						jobNR=$((jobNR+1));
 						job=`echo $line | sed 's:##\[JOB\] ::g'`;
 						prefix="step"$jobNR"_";
+						arrayContainsElement "prefix" "${OPTION_ARRAY[@]}";
+						containsPrefix=$?;
+						if [ "$containsPrefix" != 0 ];
+						then
+							OPTION_ARRAY+="prefix";
+						fi
+						VALUE_ARRAY["prefix"]="$prefix";
 						copy_job $job;
 						#insert the howto of the job into the howto of the pipeline
 						echo "" >> $1.howto;
