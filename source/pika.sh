@@ -7,14 +7,24 @@ source $LIB_DIR/jobs.sh;
 source $LIB_DIR/genomes.sh;
 source $LIB_DIR/pipelines.sh;
 source $LIB_DIR/extra_code.sh;
+source $LIB_DIR/modules.sh;
+
+##Parameters found in the config file
 MAIL="";
 BILLING="";
 PROJECT_DIR="";
 GENOMEDIR="";
 JOBDIR="";
+EXTRA_MODULES="";
+declare -A MODULE_NAME_ARRAY=();
+declare -A MODULE_VERSION_ARRAY=();
+##Set the paramters from the config file
 set_mail;
 set_billing;
 set_genome_dir;
+set_module_version;
+set_extra_modules;
+load_modules;
 
 #version
 get_version(){
@@ -52,7 +62,7 @@ show_help(){
         echo "$(tput bold)job howto$(tput sgr0) $(tput setaf 3)jobname$(tput sgr0)";
         printf "%-20s  %-20s \n" "" "Shows the howto of the given job";
         #copy jobs
-        echo "$(tput bold)job copy$(tput sgr0) $(tput setaf 3)jobname species/build$(tput sgr0)";
+        echo "$(tput bold)job copy$(tput sgr0) $(tput setaf 3)jobname$(tput sgr0) possible_parameters=values";
         printf "%-20s  %-20s \n" "" "This task needs to be executed in the project directory. A pbs script will be created in a jobs directory (inside the project dir), the pbs will contain the default values (project_dir, mail, genome, billing, ...)";
 #PIPELINES
         #list pipelines
@@ -64,7 +74,7 @@ show_help(){
         #show howto jobs
         echo "$(tput bold)pipeline howto$(tput sgr0) $(tput setaf 3)pipeline$(tput sgr0)";
         printf "%-20s  %-20s \n" "" "Shows the howto of the given pipeline";
-        echo "$(tput bold)pipeline copy$(tput sgr0) $(tput setaf 3)pipelineName species/build$(tput sgr0)";
+        echo "$(tput bold)pipeline copy$(tput sgr0) $(tput setaf 3)pipelineName$(tput sgr0) possible_parameters=values";
         printf "%-20s  %-20s \n" "" "This task needs to be executed in the project directory. All needed pbs scripts will be created in a jobs directory (inside the project dir), all the pbs will contain the default values (project_dir, mail, genome, billing, ...), the steps will be numbered for easy use. A pipelineName.howto file will be created with the steps to perform, including helpfull commands.";
 
 
@@ -108,8 +118,11 @@ else
 			pipelines)
 				show_pipelines;
 			;;
+			modules)
+				show_modules;
+			;;
 			*)
-				echo "Usage: $0 $1 {config|jobs|genomes|pipelines}";
+				echo "Usage: $0 $1 {config|jobs|genomes|pipelines|modules}";
 				exit 1;
 			;;
 		esac

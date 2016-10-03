@@ -10,6 +10,7 @@
 ##[HELP] This script is deprecated
 ##[HOWTO] #This script is deprecated
 #module load FreeBayes/1.0.2-15-g357f175-intel-2014a
+#extra_modules
 module load freebayes/1.0.2-33-foss-2015a
 
 PROJECT_DIR="";

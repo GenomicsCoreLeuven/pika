@@ -18,6 +18,7 @@
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch de_summary.pbs -data conditions.txt 
 #loading the modules
+#extra_modules
 source switch_to_2015a
 
 #setting all parameters (these could be changed)

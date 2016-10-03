@@ -138,7 +138,23 @@ copy_job(){
 			cp $BASEDIR/../scripts/*/$1.* $JOBDIR;
 			rm $JOBDIR/$1.pbs;
 			cat $BASEDIR/../scripts/*/$1.pbs | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" > $JOBDIR/$prefix$1.pbs;
-
+			
+			#add possible extra sources
+			cat $JOBDIR/$prefix$1.pbs | sed "s:#extra_modules:$EXTRA_MODULES:g" > $JOBDIR/$prefix$1.pbs.tmp;
+			mv $JOBDIR/$prefix$1.pbs.tmp $JOBDIR/$prefix$1.pbs;
+			
+			#change modules if versions are specified
+			if [ "${#MODULE_NAME_ARRAY[@]}" != "0" ];
+			then
+				#known modules
+				for module_name in "${MODULE_NAME_ARRAY[@]}";
+				do
+					module_version="${MODULE_VERSION_ARRAY[$module_name]}";
+					cat $JOBDIR/$prefix$1.pbs | sed "s:^module load $module_name$:module load $module_version:g" > $JOBDIR/$prefix$1.pbs.tmp;
+					mv $JOBDIR/$prefix$1.pbs.tmp $JOBDIR/$prefix$1.pbs;
+				done
+			fi
+			
 			#change the options
 			for option in "${OPTION_ARRAY[@]}";
 			do
@@ -160,6 +176,17 @@ copy_job(){
 			then
 				rm $JOBDIR/$1.prolog.sh;
 				cat $BASEDIR/../scripts/*/$1.prolog.sh | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" > $JOBDIR/$prefix$1.prolog.sh;
+				#change modules if versions are specified in prolog
+				if [ "${#MODULE_NAME_ARRAY[@]}" != "0" ];
+				then
+					#known modules
+					for module_name in "${MODULE_NAME_ARRAY[@]}";
+					do
+						module_version="${MODULE_VERSION_ARRAY[$module_name]}";
+						cat $JOBDIR/$prefix$1.prolog.sh | sed "s:^module load $module_name$:module load $module_version:g" > $JOBDIR/$prefix$1.prolog.sh.tmp;
+						mv $JOBDIR/$prefix$1.prolog.sh.tmp $JOBDIR/$prefix$1.prolog.sh;
+					done
+				fi
 			fi
 			echo "Copied the job $1";
 		fi

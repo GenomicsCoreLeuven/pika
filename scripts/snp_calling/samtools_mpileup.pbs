@@ -23,10 +23,10 @@
 ##[OPTIONS] mpileup_options	optional	sed "s:MPILEUP_OPTIONS=\"-B -d 2000 -Q 0\":MPILEUP_OPTIONS=\"value\":g"
 
 #loading the modules
+#extra_modules
 source switch_to_2015a;
 module use /staging/leuven/stg_00019/software/modulefiles;
 module load SAMtools/1.1-intel-2015a;
-module load VarScan/v2.4.2-Java1.8.0_77;
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

@@ -16,10 +16,12 @@
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
 ##[HOWTO] source switch_to_2015a
-##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch fastq_join.pbs -data samples.txt
 #loading the modules
+#extra_modules
+
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

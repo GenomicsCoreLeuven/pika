@@ -22,6 +22,7 @@
 ##[OPTIONS] freebayes_output_name	optional	sed "s:OUTPUT_PART=\".m15.q15.useduplicates.ploidy2\":OUTPUT_PART=\"\":"
 
 #loading the modules
+#extra_modules
 source switch_to_2015a
 module load vcflib/20160720-intel-2015a
 

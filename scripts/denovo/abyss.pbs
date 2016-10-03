@@ -18,6 +18,7 @@
 ##[HOWTO] #start the module:
 ##[HOWTO] qsub abyss.pbs
 #loading the modules
+#extra_modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module load ABySS/1.9.0-intel-2015a-Python-2.7.9
 #setting all parameters (these could be changed)

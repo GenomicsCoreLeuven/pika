@@ -27,7 +27,7 @@ cat ../../raw/*/barcodes.tsv | awk '{print $1}' | sort | uniq >> samples.txt;
 #
 
 ##[JOB] fastq_join
-##[CHANGE] fastq_join	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/gbs_demultiplexed\":"
+##[CHANGE] fastq_join	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/gbx\":"
 
 #Fastqc can be run in parallel with the flash job. With adjustment of the script this can be runed after the flash.
 ##[JOB] fastqc

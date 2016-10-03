@@ -16,7 +16,7 @@
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
 ##[HOWTO] source switch_to_2015a
-##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch flash.pbs -data samples.txt
 
@@ -25,6 +25,7 @@
 ##[OPTIONS] use_trimmomatic	optional	sed 's:IS_TRIMMOMATIC=\"no\":IS_TRIMMOMATIC=\"value\":g'
 
 #loading the modules
+#extra_modules
 module load FLASH/1.2.10
 
 #setting all parameters (these could be changed)

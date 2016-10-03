@@ -17,6 +17,7 @@
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch bamtobed.pbs -data samples.txt
 #loading the modules
+#extra_modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module load BWA/0.7.12-intel-2015a
 

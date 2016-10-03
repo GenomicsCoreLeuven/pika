@@ -25,7 +25,7 @@
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
 ##[HOWTO] #The edgeR module must be installed in your local R directory (see HELP for more info)
 ##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
-##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch edger.pbs -data conditions.txt 
 
@@ -34,6 +34,7 @@
 ##[OPTIONS] sample_conditions	optional	sed 's:SAMPLE_CONDITIONS=\"\$PROJECT_DIR/jobs/sample_conditions.csv\":SAMPLE_CONDITIONS=\"value\":g'
 
 #loading the modules
+#extra_modules
 source switch_to_2015a
 module load R/3.3.1-foss-2015a-tcl
 
@@ -46,7 +47,7 @@ R_SCRIPT_DIR="$PROJECT_DIR/jobs";
 SAMPLE_CONDITIONS="$PROJECT_DIR/jobs/sample_conditions.csv";
 
 #the actual script
-COMP_NAME=$CONDITION1"_"$CONDITION2"_"$TYPE;
+COMP_NAME=$CONDITION1"_vs_"$CONDITION2"_"$TYPE;
 CUR_DIR=$(dirname $0);
 mkdir -p $SCRATCH_DIR;
 TMPDIR=$SCRATCH_DIR;
@@ -56,9 +57,9 @@ cd $TMP_DIR;
 rsync -ahrL $SAMPLE_DIR/* .;
 rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
 
-awk -v FS="," -v OFS="," '{if(NR==1){print "LibraryName,LibraryLayout,condition,shortname,countf"}else{if(type=="strict"){file=".htseq_a10_genes_nostrand_union.counts"}else{file=".htseq_a0_genes_strand_intersectionNonempty.counts"} print $1,"RNAseq",$2,$1,$1""file;}}' sample_condition.csv | grep "LibraryName\|,$CONDITION1,\|,$CONDITION2," > samples.csv;
+awk -v FS="," -v OFS="," -v type="$TYPE" '{if(NR==1){print "LibraryName,LibraryLayout,condition,shortname,countf"}else{if(type=="strict"){file=".htseq_a10_genes_nostrand_union.counts"}else{file=".htseq_a0_genes_strand_intersectionNonempty.counts"} print $1,"RNAseq",$2,$1,$1""file;}}' sample_condition.csv | grep "LibraryName\|,$CONDITION1,\|,$CONDITION2," > samples.csv;
 
-Rscript $R_SCRIPT_DIR/edger.2conditions.R $CONDITION1 $CONDITION2;
+Rscript $R_SCRIPT_DIR/edger.2conditions.R $CONDITION1 $CONDITION2 > $COMP_NAME".rscript.log" 2> $COMP_NAME".rscript.log";
 
 rm *counts;
 

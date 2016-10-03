@@ -15,6 +15,7 @@
 ##[HOWTO] #start the module:
 ##[HOWTO] qsub fastqc.pbs
 #loading the modules
+#extra_modules
 source switch_to_2015a
 module load FastQC/0.11.5-Java-1.8.0_77
 

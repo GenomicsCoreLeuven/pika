@@ -15,13 +15,14 @@
 ##[HOWTO] #SGA preprocess
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
 ##[HOWTO] #This uses the 2015a (there can be a more resent worker installed)
-##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] #for only using 1 thread per sample:
 ##[HOWTO] wsub -batch sga_preprocess.pbs -data samples.txt
 ##[HOWTO] #for using multiple threads (this case 20)
 ##[HOWTO] wsub -batch sga_preprocess.pbs -data samples.txt -threaded 20
 #loading the modules
+#extra_modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module load SGA/0.10.14-foss-2015a
 #setting all parameters (these could be changed)

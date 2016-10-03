@@ -29,6 +29,7 @@
 
 
 #loading the modules
+#extra_modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module use /staging/leuven/stg_00019/software/modulefiles
 module load BWA/0.7.12-intel-2015a

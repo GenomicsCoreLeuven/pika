@@ -17,6 +17,7 @@
 ##[HOWTO] #start the module:
 ##[HOWTO] qsub bowtie_source.pbs
 #loading the modules
+#extra_modules
 module use /apps/leuven/thinking/2015a/modules/all 
 source switch_to_2015a
 module load Bowtie2/2.2.4-intel-2015a

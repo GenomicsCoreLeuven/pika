@@ -21,6 +21,7 @@
 ##[OPTIONS] varscan_options	optional	sed "s:VARSCAN_OPTIONS=\"--min-avg-qual 0 --min-coverage 100 --min-freq-for-hom 0.8\":VARSCAN_OPTIONS=\"value\":g"
 
 #loading the modules
+#extra_modules
 source switch_to_2015a;
 module use /staging/leuven/stg_00019/software/modulefiles;
 module load VarScan/v2.4.2-Java1.8.0_77;

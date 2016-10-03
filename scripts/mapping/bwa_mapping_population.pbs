@@ -17,7 +17,7 @@
 ##[HOWTO] #BWA mapping for populations
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
-##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] module load worker
 ##[HOWTO] #The script need to be edited: change the flash parameter
 ##[HOWTO] #The genome directory in the prolog file will need to be changed
 ##[HOWTO] #start the module:
@@ -35,6 +35,7 @@
 
 
 #loading the modules
+#extra_modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module use /staging/leuven/stg_00019/software/modulefiles
 module load BWA/0.7.12-intel-2015a

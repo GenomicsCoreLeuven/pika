@@ -18,6 +18,7 @@
 ##[HOWTO] #Note that the executable line does not start with #, also in the pipelines and in the tool the ##[HOWTO] will be trimmed.
 
 #loading the modules
+#extra_modules
 ##here all needed modules will be loaded, handy on 1 place, easy to find the used versions
 
 #setting all parameters (these could be changed)

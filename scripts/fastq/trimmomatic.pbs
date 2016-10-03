@@ -15,7 +15,7 @@
 ##[HOWTO] #trimmomatic
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
 ##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
-##[HOWTO] module load worker/1.6.4-intel-2015a
+##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch trimmomatic.pbs -data samples.txt -threaded 20
 
@@ -25,6 +25,7 @@
 
 
 #loading the modules
+#extra_modules
 module use /staging/leuven/stg_00019/software/modulefiles
 module load trimmomatic/0.36-Java1.8.0_77;
 

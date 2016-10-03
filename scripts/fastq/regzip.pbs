@@ -14,6 +14,7 @@
 ##[HOWTO] #start the module:
 ##[HOWTO] qsub regzip.pbs
 #loading the modules
+#extra_modules
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

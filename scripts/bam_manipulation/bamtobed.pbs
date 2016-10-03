@@ -20,6 +20,7 @@
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch bamtobed.pbs -data samples.txt
 #loading the modules
+#extra_modules
 module load BEDTools/2.22.1-intel-2015a
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

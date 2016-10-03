@@ -28,6 +28,7 @@
 ##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
 
 #loading the modules
+#extra_modules
 module use /apps/leuven/thinking/2015a/modules/all 
 module use /staging/leuven/stg_00019/software/modulefiles
 module load STAR/2.5.2b-GCC_4.9.2
