@@ -48,15 +48,15 @@ cat summary.tsv | column -ts $'\t' | less -#2 -N -S -R
 # You need to create the conditions.txt file for both the deseq as the edger steps.
 
 ##[JOB] deseq
-##[CHANGE] deseq	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/quantseq\":g"
+##[CHANGE] deseq	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/rnaseq\":g"
 
 ##[JOB] edger
-##[CHANGE] edger	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/quantseq\":g"
+##[CHANGE] edger	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/rnaseq\":g"
 
 ##[JOB] deseq2
-##[CHANGE] deseq2	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/quantseq\":g"
+##[CHANGE] deseq2	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/rnaseq\":g"
 
 ##[JOB] bayseq
-##[CHANGE] bayseq	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/quantseq\":g"
+##[CHANGE] bayseq	sed "s:R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs\":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/rnaseq\":g"
 
 ##[JOB] de_summary

@@ -60,7 +60,7 @@ cd $TMP_DIR;
 rsync -ahrL $SAMPLE_DIR/* .;
 rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
 
-awk -v FS="," -v OFS="," '{if(NR==1){print "sampleName,fileName,condition"}else{if(type=="strict"){file=".htseq_a10_genes_nostrand_union.counts"}else{file=".htseq_a0_genes_strand_intersectionNonempty.counts"} print $1,$1""file,$2;}}' sample_condition.csv > samples.csv;
+awk -v FS="," -v OFS="," '{if(NR==1){print "sampleName,fileName,condition"}else{if(type=="strict"){file=".htseq_a10_genes_nostrand_union.counts"}else{file=".htseq_a0_genes_strand_intersectionNonempty.counts"} print $1,$1""file,$2;}}' sample_condition.csv | grep "sampleName\|,$CONDITION1,\|,$CONDITION2," > samples.csv;
 
 Rscript $R_SCRIPT_DIR/bayseq.2conditions.R $CONDITION1 $CONDITION2 > $COMP_NAME".rscript.log" 2> $COMP_NAME".rscript.log";
 
