@@ -18,10 +18,8 @@
 ##[HOWTO] #Create a data file (regions.txt), with a REGION and NR column, region is chr:begin-end, number is a unique number (will be used in the tmp files)
 ##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
 ##[HOWTO] module load worker
-##[HOWTO] #start the module: (in case of all regions can be ran in 1 run)
-##[HOWTO] wsub -batch freebayes_regions.pbs -data regions.txt -epilog freebayes_regions.epilog.sh
-##[HOWTO] #start the module: (in case all regions can not be ran in 1 run)
-##[HOWTO] #split the regions file in multiple files
+##[HOWTO] #start the module: (in case all regions can not be ran in 1 run,
+##[HOWTO] #split the regions file in multiple files)
 ##[HOWTO] wsub -batch freebayes_regions.pbs -data regions.txt
 ##[HOWTO] #merge the vcf files later, see alse that script to change the parameters
 ##[HOWTO] qsub merge_vcf.pbs

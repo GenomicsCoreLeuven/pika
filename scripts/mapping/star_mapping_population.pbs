@@ -37,10 +37,10 @@ module load picard/2.2.2-Java1.8.0_77
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
-GENOME_DIR="$VSC_SCRATCH/tmp.$PBS_JOBID";
 SAMPLE_DIR="$PROJECT_DIR/trimmomatic";
 OUTPUT_DIR="$PROJECT_DIR/mapped";
 SCRATCH_DIR=~;
+GENOME_DIR="$SCRATCH_DIR/tmp.$PBS_JOBID";
 #This parameter can be changed for multithreaded mapping
 THREADS="20";
 
