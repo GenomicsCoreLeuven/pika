@@ -16,6 +16,7 @@ PROJECT_DIR="";
 GENOMEDIR="";
 JOBDIR="";
 EXTRA_MODULES="";
+MY_SCRATCH=~;
 declare -A MODULE_NAME_ARRAY=();
 declare -A MODULE_VERSION_ARRAY=();
 ##Set the paramters from the config file
@@ -24,6 +25,7 @@ set_billing;
 set_genome_dir;
 set_module_version;
 set_extra_modules;
+set_my_scratch;
 load_modules;
 
 #version

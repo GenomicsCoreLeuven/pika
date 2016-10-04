@@ -40,7 +40,7 @@ PROJECT_DIR="";
 GENOME_DIR="$VSC_SCRATCH/tmp.$PBS_JOBID";
 SAMPLE_DIR="$PROJECT_DIR/trimmomatic";
 OUTPUT_DIR="$PROJECT_DIR/mapped";
-SCRATCH_DIR=$VSC_SCRATCH;
+SCRATCH_DIR=~;
 #This parameter can be changed for multithreaded mapping
 THREADS="20";
 

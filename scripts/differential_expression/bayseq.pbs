@@ -2,10 +2,10 @@
 #PBS -l walltime=6:00:00
 #PBS -l mem=30gb
 #PBS -l nodes=1:ppn=20:ivybridge
-#PBS -M koen.herten@kuleuven.be
+#PBS -M MAIL
 #PBS -m eab
 #PBS -N bayseq
-#PBS -A lp_biogenomics
+#PBS -A default_project
 ##[VERSION] pika 16.08
 ##[HELP] This tool will do the differential expression analysis for the standard deseq algorithm
 ##[HELP] This script requires a sample_condition.csv file in the OUTPUT_DIR before start. This file is a comma seperated file with as heading: SAMPLE,CONDITION
@@ -46,7 +46,8 @@ module load R
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/htseq";
 OUTPUT_DIR="$PROJECT_DIR/bayseq";
-SCRATCH_DIR="$VSC_SCRATCH/$PBS_JOBID";
+SCRATCH_DIR=~;
+SCRATCH_DIR="$SCRATCH_DIR/$PBS_JOBID";
 R_SCRIPT_DIR="$PROJECT_DIR/jobs";
 SAMPLE_CONDITIONS="$PROJECT_DIR/jobs/sample_conditions.csv";
 

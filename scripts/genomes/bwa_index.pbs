@@ -18,24 +18,18 @@
 ##[HOWTO] wsub -batch bamtobed.pbs -data samples.txt
 #loading the modules
 #extra_modules
-module use /apps/leuven/thinking/2015a/modules/all 
 module load BWA/0.7.12-intel-2015a
 
 GENOME_DIR="";
-
-cd $VSC_SCRATCH_NODE;
-mkdir bwa;
-cd bwa;
-rsync -ahrL $GENOME_DIR/genome.fa .;
+BWA_VERSION="0.7.12";
 
 #creating index
-bwa index $VSC_SCRATCH_NODE/bwa/genome.fa;
 
 cd $GENOME_DIR;
-mkdir -p bwa/0.7.12;
-cd bwa/0.7.12;
-rsync -ahr $VSC_SCRATCH_NODE/bwa/* .;
+mkdir -p bwa/$BWA_VERSION;
+cd bwa/$BWA_VERSION;
+rsync -ahrL $GENOME_DIR/genome.fa .;
+bwa index $GENOME_DIR/bwa/$BWA_VERSION/genome.fa;
 cd ..
 chmod 555 -R 0.7.12;
 
-rm -rf $VSC_SCRATCH_NODE/bwa;

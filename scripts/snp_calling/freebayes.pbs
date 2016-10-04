@@ -19,7 +19,7 @@ BAM_DIR="$PROJECT_DIR/mapped";
 FREEBAYES_OPTIONS="-m 20 -q 15 --use-duplicate-reads --ploidy 2 ";
 FREEBAYES_OUTPUT_FILE_NAME="freebayes.m20.q15.useduplicates.ploidy2.vcf";
 OUTPUT_DIR="$PROJECT_DIR/snp_calling";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 
 mkdir -p $SCRATCH_DIR/genome;
 cd $SCRATCH_DIR/genome;

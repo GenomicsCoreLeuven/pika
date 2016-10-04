@@ -27,7 +27,7 @@
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/raw";
 OUTPUT_DIR="$PROJECT_DIR/fastq_join";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 
 #the actual script
 mkdir -p $SCRATCH_DIR;

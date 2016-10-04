@@ -38,7 +38,7 @@ GENOME_DIR="";
 ENSEMBL="current";
 SAMPLE_DIR="$PROJECT_DIR/mapped";
 OUTPUT_DIR="$PROJECT_DIR/htseq";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 GENES_ANNOTATION_FILE="$GENOME_DIR/Ensembl/$ENSEMBL/genes.gtf";
 #strict (yes), flexible (no)
 STRICT="yes";
@@ -49,11 +49,11 @@ TMPDIR=$SCRATCH_DIR;
 TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 if [ "$STRICT" == "yes" ];
 then
-	HTSEQ_PARAM="-s no -a 10 -i gene_name -t gene -m union";
-	OUTPUT_FILE_NAME="$SAMPLE.htseq_a10_genes_nostrand_union.counts";
+	HTSEQ_PARAM="-s yes -a 10 -i gene_name -t gene -m union";
+	OUTPUT_FILE_NAME="$SAMPLE.htseq_a10_genes_strand_union.counts";
 else
-	HTSEQ_PARAM="-s yes -a 0 -i gene_name -t gene -m intersection-nonempty";
-	OUTPUT_FILE_NAME="$SAMPLE.htseq_a0_genes_strand_intersectionNonempty.counts";
+	HTSEQ_PARAM="-s no -a 0 -i gene_name -t gene -m intersection-nonempty";
+	OUTPUT_FILE_NAME="$SAMPLE.htseq_a0_genes_nostrand_intersectionNonempty.counts";
 fi
 
 cd $TMP_DIR;

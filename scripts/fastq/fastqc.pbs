@@ -22,7 +22,7 @@ module load FastQC/0.11.5-Java-1.8.0_77
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/fastq";
-SCRATCH_DIR="$VSC_SCRATCH";
+SCRATCH_DIR=~;
 OUTPUT_DIR="$PROJECT_DIR/fastqc";
 
 #the actual script

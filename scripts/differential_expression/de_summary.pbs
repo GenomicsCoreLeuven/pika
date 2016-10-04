@@ -2,10 +2,10 @@
 #PBS -l walltime=6:00:00
 #PBS -l mem=30gb
 #PBS -l nodes=1:ppn=20:ivybridge
-#PBS -M koen.herten@kuleuven.be
+#PBS -M MAIL
 #PBS -m eab
 #PBS -N de_summary
-#PBS -A lp_biogenomics
+#PBS -A default_project
 ##[VERSION] pika 16.08
 ##[HELP] This tool will summarize the results of deseq, edger, deseq2 and bayseq 
 ##[HELP] This scripts runtime is limited (few minutes)
@@ -25,7 +25,7 @@ source switch_to_2015a
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR";
 OUTPUT_DIR="$PROJECT_DIR/de_summary";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 R_SCRIPT_DIR="$PROJECT_DIR/jobs";
 
 #the actual script

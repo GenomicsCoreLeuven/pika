@@ -137,7 +137,7 @@ copy_job(){
 			#copy the job, and change the standard values
 			cp $BASEDIR/../scripts/*/$1.* $JOBDIR;
 			rm $JOBDIR/$1.pbs;
-			cat $BASEDIR/../scripts/*/$1.pbs | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" > $JOBDIR/$prefix$1.pbs;
+			cat $BASEDIR/../scripts/*/$1.pbs | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" | sed "s:SCRATCH_DIR=~;:SCRATCH_DIR=$MY_SCRATCH;:g" > $JOBDIR/$prefix$1.pbs;
 			
 			#add possible extra sources
 			cat $JOBDIR/$prefix$1.pbs | sed "s:#extra_modules:$EXTRA_MODULES:g" > $JOBDIR/$prefix$1.pbs.tmp;

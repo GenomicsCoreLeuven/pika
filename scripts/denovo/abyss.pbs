@@ -27,7 +27,7 @@ SAMPLE_DIR="$PROJECT_DIR/";
 KMER="31";
 SAMPLE="sample";
 OUTPUT_DIR="$PROJECT_DIR/abyss_$KMER";
-SCRATCH_DIR="$VSC_SCRATCH_NODE";
+SCRATCH_DIR=~;
 
 #the actual script
 mkdir -p $SCRATCH_DIR;

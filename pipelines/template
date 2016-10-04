@@ -16,10 +16,10 @@
 ##[JOB] hello world
 #the change follows immediately on the job it applies to. It is change,space,the name of the job, tab, the command to add in the pipe (usually a sed, awk, ...)
 #In this case, the scratch directory is changed from the node scratch to the test folder in the data directory of the user
-##[CHANGE] hello_world	sed "s:SCRATCH_DIR=$VSC_SCRATCH_NODE:SCRATCH_DIR=\"$VSC_DATA/test\":"
+##[CHANGE] hello_world	sed "s:SCRATCH_DIR=~:SCRATCH_DIR=\"~/test\":"
 #Multiple change commands can follow on the same job.
 
 
 #Comment in the file can be added, just like this.
 #Lines without # are executable lines (just like in bash), example:
-cat $VSC_DATA/test/hello_world.txt 
+cat ~/test/hello_world.txt 

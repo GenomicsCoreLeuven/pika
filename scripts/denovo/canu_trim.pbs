@@ -28,7 +28,8 @@ OUTPUT_DIR="$PROJECT_DIR/canu";
 SAMPLE="";
 #this needs to be changed: example 1.1g 4.3m ...
 GENOME_SIZE="1.1g";
-SCRATCH_DIR="$VSC_SCRATCH_NODE/canu_$SAMPLE";
+SCRATCH_DIR=~;
+SCRATCH_DIR="SCRATCH_DIR/canu_$SAMPLE";
 MAX_MEM="240";
 MAX_THREADS="10";
 #uncommand for low coverage settings:

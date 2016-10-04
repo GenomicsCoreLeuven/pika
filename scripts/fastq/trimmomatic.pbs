@@ -33,7 +33,7 @@ module load trimmomatic/0.36-Java1.8.0_77;
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/fastq";
 OUTPUT_DIR="$PROJECT_DIR/trimmomatic";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 IS_RNA="no";
 
 if [ "$IS_RNA" == "no" ];

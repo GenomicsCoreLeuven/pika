@@ -32,7 +32,7 @@ VCF_DIR="$PROJECT_DIR/snp_calling/parts";
 OUTPUT_DIR="$PROJECT_DIR/snp_calling";
 FREEBAYES_OUTPUT_NAME=".m15.q15.useduplicates.ploidy2";
 FREEBAYES_OUTPUT_FILE_NAME="freebayes"$FREEBAYES_OUTPUT_NAME".vcf";
-SCRATCH_DIR="$VSC_SCRATCH_NODE";
+SCRATCH_DIR=~;
 
 #the actual script
 mkdir -p $SCRATCH_DIR;

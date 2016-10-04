@@ -29,7 +29,7 @@ PROJECT_DIR="";
 GENOME_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/input";
 OUTPUT_DIR="$PROJECT_DIR/output";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 
 #the actual script
 ##here the actual code of the script is written. There are no limitations to the code itself, as long as it is well documented in the help, howto, and parameters.

@@ -27,7 +27,7 @@ SAMPLE_DIR="$PROJECT_DIR/raw";
 OUTPUT_DIR="$PROJECT_DIR/canu";
 SAMPLE="";
 GENOME_SIZE="1.1g";
-SCRATCH_DIR="$VSC_SCRATCH_NODE";
+SCRATCH_DIR=~;
 MAX_MEM="240";
 MAX_THREADS="10";
 #uncommand for low coverage settings:

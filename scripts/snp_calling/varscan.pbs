@@ -30,7 +30,7 @@ module load VarScan/v2.4.2-Java1.8.0_77;
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/mpileup";
 OUTPUT_DIR="$PROJECT_DIR/varscan";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 VARSCAN_OPTIONS="--min-avg-qual 0 --min-coverage 100 --min-freq-for-hom 0.8";
 
 #the actual script

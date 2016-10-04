@@ -43,7 +43,7 @@ SAMPLE_DIR="$PROJECT_DIR/raw";
 OUTPUT_DIR="$PROJECT_DIR/mapped";
 #this can be NO (for regular files), FLASH (for only flashed data) or BOTH (for both flashed and unflashed data)
 FLASH="NO";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 THREADS="20";
 SAMPLE="";
 BWA_OPTIONS="";

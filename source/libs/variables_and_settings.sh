@@ -11,6 +11,7 @@ check_config_file(){
 		echo "Standard genome path: $GENOMEDIR";
 		echo "Standard extra modules command: $EXTRA_MODULES";
 		echo "Standard module version: $MODULE_VERSION";
+		echo "Standard scratch storage: $MY_SCRATCH";
 	else
 		echo "No config file found";
 		echo -n "Do you want to create a config file [y/n]: ";
@@ -60,6 +61,27 @@ set_module_version(){
 	fi
 }
 
+set_my_scratch(){
+	if [ -f ~/.pika_config ];
+	then
+		MY_SCRATCH=`grep "my_scratch="  ~/.pika_config | awk -v FS="=" '{print $2;}'`;
+	else
+		MY_SCRATCH=~;
+	fi
+}
+
+change_my_scratch(){
+	correct_scratch=0;
+	if [ -d $1 ] || [[ $1 = \$* ]]
+	then
+		MY_SCRATCH=$1;
+	else
+		echo "The given scratch directory does not exists, so can not change the scratch";
+		correct_scratch=1;
+	fi
+	return "$correct_scratch";
+}
+
 change_config(){
 	#create a config file
 	touch ~/.pika_config;
@@ -69,10 +91,12 @@ change_config(){
         read billing;
         echo "Please insert the default genome directory [current: $GENOMEDIR]: ";
         read genomedir;
-	echo -n "Please insert your Extra Modules Command [current: $EXTRA_MODULES]: ";
+	echo "Please insert your Extra Modules Command [current: $EXTRA_MODULES]: ";
 	read extramodules;
-	echo -n "Please insert the to use module version [current: $MODULE_VERSION]: ";
+	echo "Please insert the to use module version [current: $MODULE_VERSION]: ";
 	read moduleversion;
+	echo "Please insert the to use scratch storage [current: $MY_SCRATCH]: ";
+	read myscratch;
 	if [ "$mail" != "" ]
 	then  
         	echo "mail=$mail" > ~/.pika_config;
@@ -118,6 +142,18 @@ change_config(){
 			MODULE_VERSION="";
 		fi
 		echo "module_version=$MODULE_VERSION" >> ~/.pika_config;
+	fi
+	if [ "$myscratch" != "" ]
+	then
+		change_my_scratch $myscratch;
+		correct_scratch=$?;
+		if [ "$correct_scratch" == 0 ]
+		then
+			MY_SCRATCH=$myscratch;
+		fi
+		echo "my_scratch=$MY_SCRATCH"  >> ~/.pika_config;
+	else
+		echo "my_scratch=$MY_SCRATCH"  >> ~/.pika_config;
 	fi
 	echo "New config file saved";
 }

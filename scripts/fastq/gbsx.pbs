@@ -31,7 +31,7 @@ module load gbsx/v1.3-Java1.8.0_77
 PROJECT_DIR="";
 RUN_DIR="$PROJECT_DIR/raw";
 OUTPUT_DIR="$PROJECT_DIR/gbsx";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 THREADS="20";
 
 #the actual script

@@ -42,7 +42,7 @@ module load R/3.3.1-foss-2015a-tcl
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/htseq";
 OUTPUT_DIR="$PROJECT_DIR/edger";
-SCRATCH_DIR=$VSC_SCRATCH_NODE;
+SCRATCH_DIR=~;
 R_SCRIPT_DIR="$PROJECT_DIR/jobs";
 SAMPLE_CONDITIONS="$PROJECT_DIR/jobs/sample_conditions.csv";
 

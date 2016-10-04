@@ -18,26 +18,20 @@
 ##[HOWTO] qsub bowtie_source.pbs
 #loading the modules
 #extra_modules
-module use /apps/leuven/thinking/2015a/modules/all 
-source switch_to_2015a
 module load Bowtie2/2.2.4-intel-2015a
 
 #setting all parameters (these could be changed)
 GENOME_DIR="";
+BOWTIE_VERSION="2.2.4";
 
 #the actual script
-cd $VSC_SCRATCH_NODE;
-mkdir bowtie;
-rsync -ahrL $GENOME_DIR/genome.fa .;
 
 #creating index
-bowtie2-build $VSC_SCRATCH_NODE/genome.fa $VSC_SCRATCH_NODE/bowtie/genome;
-
 cd $GENOME_DIR;
-mkdir -p bowtie2/2.2.4;
-cd bowtie2/2.2.4;
-rsync -ahr $VSC_SCRATCH_NODE/bowtie/* .;
+mkdir -p bowtie2/$BOWTIE_VERSION;
+cd bowtie2/$BOWTIE_VERSION;
+rsync -ahrL $GENOME_DIR/genome.fa .;
+bowtie2-build $GENOME_DIR/bowtie2/$BOWTIE_VERSION/genome.fa $GENOME_DIR/bowtie2/$BOWTIE_VERSION/genome;
 cd ..;
 chmod 555 -R 2.2.4;
 
-rm -rf $VSC_SCRATCH_NODE/bowtie;
