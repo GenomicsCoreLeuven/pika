@@ -17,6 +17,7 @@ GENOMEDIR="";
 JOBDIR="";
 EXTRA_MODULES="";
 MY_SCRATCH=~;
+MODULE_VERSION="";
 declare -A MODULE_NAME_ARRAY=();
 declare -A MODULE_VERSION_ARRAY=();
 ##Set the paramters from the config file
@@ -79,6 +80,13 @@ show_help(){
         echo "$(tput bold)pipeline copy$(tput sgr0) $(tput setaf 3)pipelineName$(tput sgr0) possible_parameters=values";
         printf "%-20s  %-20s \n" "" "This task needs to be executed in the project directory. All needed pbs scripts will be created in a jobs directory (inside the project dir), all the pbs will contain the default values (project_dir, mail, genome, billing, ...), the steps will be numbered for easy use. A pipelineName.howto file will be created with the steps to perform, including helpfull commands.";
 
+#GLOBAL PARAMETERS
+	echo "";
+	echo "These are my Global parameters, you can set for every job or pipeline (does override the config file only the time when used)";
+	printf "%-20s  %-20s %-20s \n" "" "MAIL" "This changes the mail adress in the scripts [Now: $MAIL]";
+	printf "%-20s  %-20s %-20s \n" "" "BILLING" "This changes the used billing account for the scripts [Now: $BILLING]";
+	printf "%-20s  %-20s %-20s \n" "" "SCRATCH" "This changes the to use scratch for the scripts [Now: $MY_SCRATCH]";
+	printf "%-20s  %-20s %-20s \n" "" "MODULE_VERSION" "This changes the to use module version file [Now: $MODULE_VERSION]";
 
 }
 
@@ -102,6 +110,38 @@ else
 		fi
 		((i++));
 	done
+	#Check global variables: MAIL, BILLING, MY_SCRATCH, MODULE_VERSION 
+	arrayContainsElement "MAIL" "${OPTION_ARRAY[@]}";
+	containsMail=$?;
+	if [ "$containsMail" == 0 ];
+	then
+		MAIL="${VALUE_ARRAY[MAIL]}";
+	fi
+	arrayContainsElement "BILLING" "${OPTION_ARRAY[@]}";
+	containsBilling=$?;
+	if [ "$containsBilling" == 0 ];
+	then
+		BILLING="${VALUE_ARRAY[BILLING]}";
+	fi
+	arrayContainsElement "SCRATCH" "${OPTION_ARRAY[@]}";
+	containsScratch=$?;
+	if [ "$containsScratch" == 0 ];
+	then
+		change_my_scratch ${VALUE_ARRAY[SCRATCH]};
+	fi
+	arrayContainsElement "MODULE_VERSION" "${OPTION_ARRAY[@]}";
+	containsModuleVersion=$?;
+	if [ "$containsModuleVersion" == 0 ];
+	then
+		check_module_exists ${VALUE_ARRAY[MODULE_VERSION]};
+		exists_module=$?;
+		if [ "$exists_module" == 0 ];
+		then
+			MODULE_VERSION="${VALUE_ARRAY[MODULE_VERSION]}";
+			load_modules;
+		fi
+	fi
+
     case "$1" in
         help)
             show_help;

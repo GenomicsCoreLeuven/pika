@@ -37,6 +37,8 @@ load_modules(){
 	exists=$?;
 	if [ "$exists" == 0 ]
 	then
+		MODULE_NAME_ARRAY=();
+		MODULE_VERSION_ARRAY=();
 		module_count=0;
 		while read line; 
 		do
