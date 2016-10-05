@@ -13,13 +13,12 @@
 ##[HOWTO] #Differential Expression Summary
 ##[HOWTO] #Create a data file (conditions.txt), with a CONDITION1, CONDITION2 and a TYPE column
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
-##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] #This uses worker
 ##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch de_summary.pbs -data conditions.txt 
 #loading the modules
 #extra_modules
-source switch_to_2015a
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

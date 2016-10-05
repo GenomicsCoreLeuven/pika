@@ -17,15 +17,14 @@
 ##[HOWTO] #Create a data file (runs.txt), with a RUN column
 ##[HOWTO] #The file system should be RUN_DIR/runname/ with the raw gziped fastq files, and the barcodes.tsv file (see gbsx website)
 ##[HOWTO] #The barcodes.tsv is a tabdelimited file, with (no header) sample, barcode, enzyme
-##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] #This uses worker
 ##[HOWTO] #Change the number of nodes to the number of runs you want to demultiplex at once + 1
 ##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch gbsx.pbs -data runs.txt -threaded 20
 #loading the modules
 #extra_modules
-module use /staging/leuven/stg_00019/software/modulefiles
-module load gbsx/v1.3-Java1.8.0_77
+module load gbsx
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

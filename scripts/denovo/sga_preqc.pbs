@@ -15,14 +15,13 @@
 ##
 ##[HOWTO] #SGA preqc
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and THREADS column
-##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] #This uses worker
 ##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch sga_preqc.pbs -data samples.txt -epilog sga_preqc_epilog.sh -threaded 20
 #loading the modules
 #extra_modules
-module use /apps/leuven/thinking/2015a/modules/all 
-module load SGA/0.10.14-foss-2015a
+module load SGA
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/sga_preprocess";

@@ -22,9 +22,7 @@
 
 #loading the modules
 #extra_modules
-source switch_to_2015a;
-module use /staging/leuven/stg_00019/software/modulefiles;
-module load VarScan/v2.4.2-Java1.8.0_77;
+module load VarScan
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

@@ -11,8 +11,7 @@
 ##[HELP] This script requires a sample_condition.csv file in the OUTPUT_DIR before start. This file is a comma seperated file with as heading: SAMPLE,CONDITION
 ##[HELP] This scripts runtime is limited (few minutes)
 ##[HELP] You must install deseq first in your local R:
-##[HELP] Go to the 2015a version: source switch_to_2015a
-##[HELP] Load the R module: module load R/3.3.1-foss-2015a-tcl
+##[HELP] Load the R module: module load R
 ##[HELP] Start R: R
 ##[HELP] Now you are in an R environment
 ##[HELP] add a new source to install new tools: source("https://bioconductor.org/biocLite.R")
@@ -27,7 +26,7 @@
 ##[HOWTO] #Create a data file (conditions.txt), with a CONDITION1, CONDITION2 and a TYPE column
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
 ##[HOWTO] #The baySeq module must be installed in your local R directory (see HELP for more info)
-##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] #This uses the worker module
 ##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch bayseq.pbs -data conditions.txt 
@@ -39,7 +38,6 @@
 
 #loading the modules
 #extra_modules
-source switch_to_2015a
 module load R
 
 #setting all parameters (these could be changed)

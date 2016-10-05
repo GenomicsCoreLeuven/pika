@@ -18,8 +18,7 @@
 ##[HOWTO] qsub canu_assemble.pbs
 #loading the modules
 #extra_modules
-module use /apps/leuven/thinking/2015a/modules/all 
-module load canu/1.0-GCC-4.9.2
+module load canu
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

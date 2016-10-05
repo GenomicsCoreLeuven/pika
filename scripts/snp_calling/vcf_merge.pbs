@@ -23,8 +23,7 @@
 
 #loading the modules
 #extra_modules
-source switch_to_2015a
-module load vcflib/20160720-intel-2015a
+module load vcflib
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

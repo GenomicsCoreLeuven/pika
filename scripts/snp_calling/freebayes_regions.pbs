@@ -16,7 +16,7 @@
 ##
 ##[HOWTO] #Freebayes
 ##[HOWTO] #Create a data file (regions.txt), with a REGION and NR column, region is chr:begin-end, number is a unique number (will be used in the tmp files)
-##[HOWTO] #This uses the 2015a (there can be a more recent worker installed)
+##[HOWTO] #This uses worker
 ##[HOWTO] module load worker
 ##[HOWTO] #start the module: (in case all regions can not be ran in 1 run,
 ##[HOWTO] #split the regions file in multiple files)
@@ -35,7 +35,7 @@
 
 #loading the modules
 #extra_modules
-module load freebayes/1.0.2-33-foss-2015a
+module load freebayes
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

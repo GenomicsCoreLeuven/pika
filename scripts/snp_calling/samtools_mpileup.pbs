@@ -24,9 +24,7 @@
 
 #loading the modules
 #extra_modules
-source switch_to_2015a;
-module use /staging/leuven/stg_00019/software/modulefiles;
-module load SAMtools/1.1-intel-2015a;
+module load SAMtools
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";

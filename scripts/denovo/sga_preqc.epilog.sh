@@ -1,5 +1,5 @@
-module use /apps/leuven/thinking/2015a/modules/all 
-module load SGA/0.10.14-foss-2015a
+#extra_modules
+module load SGA
 
 PROJECT_DIR="";
 OUTPUT_DIR="$PROJECT_DIR/sga_preqc";

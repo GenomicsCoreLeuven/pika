@@ -14,7 +14,7 @@
 ##
 ##[HOWTO] #HTSEQ-count
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
-##[HOWTO] #This uses the 2014a (there can be a more resent worker installed)
+##[HOWTO] #This uses worker
 ##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch htseq.pbs -data samples.txt
@@ -29,8 +29,8 @@
 
 #loading the modules
 #extra_modules
-module load SAMtools/0.1.19-intel-2014a;
-module load HTSeq/0.6.1p1-intel-2014a-Python-2.7.6;
+module load SAMtools;
+module load HTSeq;
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
