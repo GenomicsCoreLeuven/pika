@@ -19,6 +19,12 @@
 ##[HOWTO] module load worker
 ##[HOWTO] #start the module:
 ##[HOWTO] wsub -batch sga_preqc.pbs -data samples.txt -epilog sga_preqc_epilog.sh -threaded 20
+#
+##Options
+##[HELP] Options:
+##[HELP] genome: this option is used in the epilog. The sga example files should be in ../../sga_preqc_examples/
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+
 #loading the modules
 #extra_modules
 module load SGA

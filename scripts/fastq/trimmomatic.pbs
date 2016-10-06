@@ -20,6 +20,8 @@
 ##[HOWTO] wsub -batch trimmomatic.pbs -data samples.txt -threaded 20
 
 ##[HELP] Options:
+##[HELP] genome: the genome used for the other steps in a pipeline (your adapters should be in ../../adapters/trimmomatic/TruSeq3-PE.fa for regular adapters, or in ../../adapters/rna_polyA/adapter_polyA.fa for 3 prime rna seq (like quantseq))
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
 ##[HELP] is_rna: yes if the rna trimming must be used (poly AAAA) (for quantseq)
 ##[OPTIONS] is_rna	optional	sed 's:IS_RNA=\"no\":IS_RNA=\"value\":g'
 
@@ -34,12 +36,13 @@ SAMPLE_DIR="$PROJECT_DIR/fastq";
 OUTPUT_DIR="$PROJECT_DIR/trimmomatic";
 SCRATCH_DIR=~;
 IS_RNA="no";
+GENOME_DIR="";
 
 if [ "$IS_RNA" == "no" ];
 then
-	ILLUMINACLIP="ILLUMINACLIP:/staging/leuven/stg_00019/genome/adapters/trimmomatic/TruSeq3-PE.fa:2:30:10:8:keepBothReads";
+	ILLUMINACLIP="ILLUMINACLIP:$GENOME_DIR/../../adapters/trimmomatic/TruSeq3-PE.fa:2:30:10:8:keepBothReads";
 else
-	ILLUMINACLIP="ILLUMINACLIP:/staging/leuven/stg_00019/genome/adapters/rna_polyA/adapter_polyA.fa:2:7:7 MINLEN:20 HEADCROP:10";
+	ILLUMINACLIP="ILLUMINACLIP:$GENOME_DIR/../../adapters/rna_polyA/adapter_polyA.fa:2:7:7 MINLEN:20 HEADCROP:10";
 fi 
 
 #the actual script
