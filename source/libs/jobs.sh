@@ -134,87 +134,75 @@ copy_job(){
 		fi
 		if [ "$correct_job" == 0 ] && [ "$correct_species" == 0 ];
         	then
-			#copy the job, and change the standard values
+			#copy the job
 			cp $BASEDIR/../scripts/*/$1.* $JOBDIR;
-			rm $JOBDIR/$1.pbs;
-			cat $BASEDIR/../scripts/*/$1.pbs | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" | sed "s:SCRATCH_DIR=~;:SCRATCH_DIR=$MY_SCRATCH;:g" > $JOBDIR/$prefix$1.pbs;
-			
-			#add possible extra sources
-			cat $JOBDIR/$prefix$1.pbs | sed "s:#extra_modules:$EXTRA_MODULES:g" > $JOBDIR/$prefix$1.pbs.tmp;
-			mv $JOBDIR/$prefix$1.pbs.tmp $JOBDIR/$prefix$1.pbs;
-			
-			#change modules if versions are specified
-			if [ "${#MODULE_NAME_ARRAY[@]}" != "0" ];
+			if [ -f $JOBDIR/$1.pbs ];
 			then
-				#known modules
-				for module_name in "${MODULE_NAME_ARRAY[@]}";
-				do
-					module_version="${MODULE_VERSION_ARRAY[$module_name]}";
-					cat $JOBDIR/$prefix$1.pbs | sed "s:^module load $module_name$\|^module load $module_name;$:module load $module_version;:g" > $JOBDIR/$prefix$1.pbs.tmp;
-					mv $JOBDIR/$prefix$1.pbs.tmp $JOBDIR/$prefix$1.pbs;
-				done
+				mv $JOBDIR/$1.pbs $JOBDIR/$prefix$1.pbs;
+				copy_and_correct_script $JOBDIR/$prefix$1.pbs;
 			fi
-			
-			#change the options
-			for option in "${OPTION_ARRAY[@]}";
-			do
-				if [ "$option" != "genome" ];
-				then
-				value="${VALUE_ARRAY["$option"]}";
-				action=`grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.pbs | grep $option | awk -v FS='\t' '{print $3}' | sed "s:value:$value:"`;
-				if [ ! -z "$action" ];
-				then
-					echo "cat $JOBDIR/$prefix$1.pbs | $action > $JOBDIR/$prefix$1.pbs.tmp" | sh;
-					mv $JOBDIR/$prefix$1.pbs.tmp $JOBDIR/$prefix$1.pbs;
-					fi
-				fi
-			done
-
-
-			#change possible prologs
 			if [ -f $JOBDIR/$1.prolog.sh ];
 			then
-				rm $JOBDIR/$1.prolog.sh;
-				cat $BASEDIR/../scripts/*/$1.prolog.sh | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" | sed "s:SCRATCH_DIR=~;:SCRATCH_DIR=$MY_SCRATCH;:g" > $JOBDIR/$prefix$1.prolog.sh;
-				cat $JOBDIR/$prefix$1.prolog.sh | sed "s:#extra_modules:$EXTRA_MODULES:g" > $JOBDIR/$prefix$1.prolog.sh.tmp;
-				mv $JOBDIR/$prefix$1.prolog.sh.tmp $JOBDIR/$prefix$1.prolog.sh;
-				#change modules if versions are specified in prolog
-				if [ "${#MODULE_NAME_ARRAY[@]}" != "0" ];
-				then
-					#known modules
-					for module_name in "${MODULE_NAME_ARRAY[@]}";
-					do
-						module_version="${MODULE_VERSION_ARRAY[$module_name]}";
-						cat $JOBDIR/$prefix$1.prolog.sh | sed "s:^module load $module_name$\|^module load $module_name;$:module load $module_version:g" > $JOBDIR/$prefix$1.prolog.sh.tmp;
-						mv $JOBDIR/$prefix$1.prolog.sh.tmp $JOBDIR/$prefix$1.prolog.sh;
-					done
-				fi
+				mv $JOBDIR/$1.prolog.sh $JOBDIR/$prefix$1.prolog.sh;
+				copy_and_correct_script $JOBDIR/$prefix$1.prolog.sh;
 			fi
-
-			#change possible epilogs
 			if [ -f $JOBDIR/$1.epilog.sh ];
 			then
-				rm $JOBDIR/$1.epilog.sh;
-				cat $BASEDIR/../scripts/*/$1.epilog.sh | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" | sed "s:SCRATCH_DIR=~;:SCRATCH_DIR=$MY_SCRATCH;:g" > $JOBDIR/$prefix$1.epilog.sh;
-				cat $JOBDIR/$prefix$1.epilog.sh | sed "s:#extra_modules:$EXTRA_MODULES:g" > $JOBDIR/$prefix$1.epilog.sh.tmp;
-				mv $JOBDIR/$prefix$1.epilog.sh.tmp $JOBDIR/$prefix$1.epilog.sh;
-				#change modules if versions are specified in prolog
-				if [ "${#MODULE_NAME_ARRAY[@]}" != "0" ];
-				then
-					#known modules
-					for module_name in "${MODULE_NAME_ARRAY[@]}";
-					do
-						module_version="${MODULE_VERSION_ARRAY[$module_name]}";
-						cat $JOBDIR/$prefix$1.epilog.sh | sed "s:^module load $module_name$\|^module load $module_name;$:module load $module_version:g" > $JOBDIR/$prefix$1.epilog.sh.tmp;
-						mv $JOBDIR/$prefix$1.epilog.sh.tmp mv $JOBDIR/$prefix$1.epilog.sh;
-					done
-				fi
+				mv $JOBDIR/$1.epilog.pbs $JOBDIR/$prefix$1.epilog.pbs;
+				copy_and_correct_script $JOBDIR/$prefix$1.epilog.pbs;
 			fi
 			echo "Copied the job $1";
 		fi
 	fi
-
-
-
-
 }
+
+
+
+copy_and_correct_script(){
+	if [ "$1" == "" ] || [ ! -f $1 ];
+	then
+		return 1;
+	else
+		script=$1;
+		cat $script | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" | sed "s:SCRATCH_DIR=~;:SCRATCH_DIR=$MY_SCRATCH;:g" > $script.tmp;
+
+		mv $script.tmp $script;
+		#add possible extra sources
+		cat $script | sed "s:#extra_modules:$EXTRA_MODULES:g" > $script.tmp;
+		mv $script.tmp $script;
+
+		#change modules if versions are specified
+		if [ "${#MODULE_NAME_ARRAY[@]}" != "0" ];
+		then
+			#known modules
+			for module_name in "${MODULE_NAME_ARRAY[@]}";
+			do
+			module_version="${MODULE_VERSION_ARRAY[$module_name]}";
+			cat $script | sed "s:^module load $module_name$\|^module load $module_name;$:module load $module_version;:g" > $script.tmp;
+			mv $script.tmp $script;
+			done
+		fi
+
+		#change the options
+		for option in "${OPTION_ARRAY[@]}";
+		do
+			if [ "$option" != "genome" ];
+			then
+				value="${VALUE_ARRAY["$option"]}";
+				action=`grep "##\[OPTIONS\]" $script | grep $option | awk -v FS='\t' '{print $3}' | sed "s:value:$value:"`;
+				if [ ! -z "$action" ];
+				then
+					echo "cat $script | $action > $script.tmp" | sh;
+					mv $script.tmp $script;
+				fi
+			fi
+		done
+	fi
+	return 0; 
+}
+
+
+
+
+
+
