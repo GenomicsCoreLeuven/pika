@@ -41,13 +41,13 @@ check_pipeline_exists(){
                 if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #pipeline does not exists
-                        echo "No pipeline found with this name";
+                        echo "No pipeline found with this name: $BASEDIR/../pipelines/$1";
                         correct_pipeline=1;
                 fi
                 if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -gt 1 ];
                 then
                         #multiple pipelines for the name
-                        echo "Multiple pipelines found with this name";
+                        echo "Multiple pipelines found with this name: $BASEDIR/../pipelines/$1";
                         correct_pipeline=1;
                 fi
         fi
@@ -145,13 +145,13 @@ copy_pipeline(){
 						copy_job $job;
 						#insert the howto of the job into the howto of the pipeline
 						echo "" >> $1.howto;
-						grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$job.pbs | sed "s:##\[HOWTO\] ::g" | sed "s:$job:$prefix$job:g" >> $1.howto;
+						grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$job.script | sed "s:##\[HOWTO\] ::g" | sed "s:$job:$prefix$job:g" >> $1.howto;
 						echo "" >> $1.howto;
 					;;
 					"##[CHANGE]"*)
 						change=`echo $line | awk -v FS='\t' '{print $2;}'`;
-						mv $prefix$job.pbs $prefix$job.tmp;
-                                        	echo "cat $prefix$job.tmp | $change > $prefix$job.pbs" | sh;
+						mv $prefix$job.$GRID_ENGINE $prefix$job.tmp;
+                                        	echo "cat $prefix$job.tmp | $change > $prefix$job.$GRID_ENGINE" | sh;
                                         	rm $prefix$job.tmp;
 					;;
 					"##[HELP]"*)

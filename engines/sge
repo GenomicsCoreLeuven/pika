@@ -1,0 +1,9 @@
+#!/bin/bash -l
+#$ -l h_rt=WALLTIME_SECONDS
+#$ -l mem_free=MEMORY
+#$ -pe TOTAL_CORES
+#$ -M MAIL
+#$ -m aeb
+#$ -N NAME
+#$ -A default_project
+#$ -l PARTITION

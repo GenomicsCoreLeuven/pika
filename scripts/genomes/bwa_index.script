@@ -1,0 +1,34 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	20gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	1
+##[RUN] NAME	bwa_index
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 16.08
+##[HELP] This tool will create the bwa index for the genome
+##[HELP] This script will use only one cpu
+##[HELP] This script has a longer runtime (couple of houres)
+##
+##[HOWTO] #BWA index
+##[HOWTO] #the genome directory in the script has to be changed
+##[HOWTO] #the fasta file has to be named genome.fa
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch bamtobed.pbs -data samples.txt
+#loading the modules
+#extra_modules
+module load BWA
+
+GENOME_DIR="";
+BWA_VERSION="0.7.12";
+
+#creating index
+
+cd $GENOME_DIR;
+mkdir -p bwa/$BWA_VERSION;
+cd bwa/$BWA_VERSION;
+rsync -ahrL $GENOME_DIR/genome.fa .;
+bwa index $GENOME_DIR/bwa/$BWA_VERSION/genome.fa;
+cd ..
+chmod 555 -R 0.7.12;
+

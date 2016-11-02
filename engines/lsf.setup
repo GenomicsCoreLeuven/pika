@@ -1,0 +1,6 @@
+extention	lsf
+submission	bsub
+job_id	$LSB_JOBID
+job_array_index	$LSB_JOBINDEX
+job_array	-J "name[ARRAY_INTERVAL]"
+chain	-w "done(JOBID)"

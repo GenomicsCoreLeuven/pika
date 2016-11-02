@@ -1,0 +1,72 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	4:12:00:00
+##[RUN] NODES	25
+##[RUN] CORES_PER_NODE	1
+##[RUN] MEMORY	120gb
+##[RUN] NAME	freebayes_regions
+##[RUN] ACCOUNT	default_project 
+##This is a worker script, it uses REGION and NR as parameter
+##[VERSION] pika 16.08
+##[HELP] This is a worker script: it uses REGION and NR parameters (region is chr:begin-end, number is a unique number)
+##[HELP] This tool will do a variant calling in the given region, and use the NR in the ouput files (needs to be merged later)
+##[HELP] This script will use only one cpu, it can use a lot of RAM (depends on the number of input files), so only use 1 cpu per node, preferable to start with 120Gb per node
+##[HELP] This scripts runtime depends on the compelity of the region, the number of samples and the depth of the region
+## [HELP] This script needs to be changed: change the genome directory, optional the freebayes options (and output file name), the output file name of the final file can be changed in the epilog
+##
+##[HOWTO] #Freebayes
+##[HOWTO] #Create a data file (regions.txt), with a REGION and NR column, region is chr:begin-end, number is a unique number (will be used in the tmp files)
+##[HOWTO] #This uses worker
+##[HOWTO] module load worker
+##[HOWTO] #start the module: (in case all regions can not be ran in 1 run,
+##[HOWTO] #split the regions file in multiple files)
+##[HOWTO] wsub -batch freebayes_regions.pbs -data regions.txt
+##[HOWTO] #merge the vcf files later, see alse that script to change the parameters
+##[HOWTO] qsub merge_vcf.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] freebayes_options: the options for freebayes (standard= -m 15 -q 15 --use-duplicate-reads --ploidy 2)
+##[OPTIONS] freebayes_options	optional	sed "s:FREEBAYES_OPTIONS=\"-m 15 -q 15 --use-duplicate-reads --ploidy 2\":FREEBAYES_OPTIONS=\"value\":g"
+##[HELP] freebayes_output_name: the name in the freebayes output
+##[OPTIONS] freebayes_output_name	optional	sed "s:OUTPUT_PART=\".m15.q15.useduplicates.ploidy2\":OUTPUT_PART=\"\":"
+
+
+#loading the modules
+#extra_modules
+module load freebayes
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+BAM_DIR="$PROJECT_DIR/mapped";
+FREEBAYES_OPTIONS="-m 15 -q 15 --use-duplicate-reads --ploidy 2 ";
+OUTPUT_PART=".m15.q15.useduplicates.ploidy2";
+FREEBAYES_OUTPUT_FILE_NAME="freebayes"$OUTPUT_PART"_"$NR".vcf";
+OUTPUT_DIR="$PROJECT_DIR/snp_calling/parts";
+SCRATCH_DIR="$OUTPUT_DIR/tmp";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+mkdir -p $TMP_DIR/genome;
+cd $TMP_DIR/genome;
+rsync -ahrL $GENOME_DIR/genome.fa* .;
+mkdir -p $OUTPUT_DIR;
+
+bamfiles="";
+for i in `ls -1 -d $BAM_DIR/*bam`;
+do
+	bamfiles="$bamfiles $i";
+done
+
+freebayes --fasta-reference $TMP_DIR/genome/genome.fa --region "$REGION" $FREEBAYES_OPTIONS $bamfiles > $TMP_DIR/$FREEBAYES_OUTPUT_FILE_NAME;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$FREEBAYES_OUTPUT_FILE_NAME .;
+#rm -rf $SCRATCH_DIR/genome;

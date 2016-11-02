@@ -1,0 +1,8 @@
+#!/bin/bash -l
+#BSUB -W WALLTIME
+#BSUB -M MEMORY
+#BSUB -n TOTAL_CORES
+#BSUB -u MAIL
+#BSUB -B -N
+#BSUB -J NAME
+#BSUB -P default_project

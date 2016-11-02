@@ -5,11 +5,11 @@ show_jobs(){
 	for category in `ls -1 -d $jobdir* | sed "s:$jobdir::g"`;
 	do
 		echo $category;	
-		for task in `ls -1 -d $BASEDIR/../scripts/$category/*.pbs | sed "s:$BASEDIR/../scripts/$category/::g" | sed 's/.pbs//g'`;
+		for task in `ls -1 -d $BASEDIR/../scripts/$category/*.script | sed "s:$BASEDIR/../scripts/$category/::g" | sed 's/.script//g'`;
 		do
-			printf "%-20s  %-20s \n" "" "$task";	
+			printf "%-20s  %-20s \n" "" "$task";
 		done
-	done	
+	done
 }
 
 
@@ -20,7 +20,7 @@ show_job_help(){
 	then
 		echo "The help of $1";
 		#correct job
-		grep "##\[HELP\]" $BASEDIR/../scripts/*/$1.pbs | sed 's/##\[HELP\] /\t/g';		
+		grep "##\[HELP\]" $BASEDIR/../scripts/*/$1.script | sed 's/##\[HELP\] /\t/g';
 	fi
 }
 
@@ -31,7 +31,7 @@ show_job_howto(){
         then
                 echo "The howto of $1";
                 #correct job
-                grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$1.pbs | sed 's/##\[HOWTO\] /\t/g';
+                grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$1.script | sed 's/##\[HOWTO\] /\t/g';
         fi
 }
 
@@ -43,13 +43,13 @@ check_job_exists(){
 		correct=1;
 	else
 		#a jobname is given
-                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -eq 0 ];
+                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #jobname does not exists
                         echo "No job found with this name: $1";
                         correct=1;
                 fi
-                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -gt 1 ];
+                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -gt 1 ];
                 then
                         #multiple job for the name
                         echo "Multiple jobs found with this name: $1";
@@ -68,13 +68,13 @@ check_job(){
 		correct=1;
         else
                 #a jobname is given
-                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -eq 0 ];
+                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #jobname does not exists
                         echo "No job found with this name: $1";
 			correct=1;
                 fi
-		if [ `ls -1 -d $BASEDIR/../scripts/*/$1.pbs 2>/dev/null | wc -l` -gt 1 ];
+		if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -gt 1 ];
 		then
 			#multiple job for the name
 			echo "Multiple jobs found with this name: $1";
@@ -85,7 +85,7 @@ check_job(){
 			#check the options
 			declare -A optionList;
 			optionCount=0;
-			for option in `grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.pbs | grep "mandatory" | awk '{print $2;}'`;
+			for option in `grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.script | grep "mandatory" | awk '{print $2;}'`;
 			do
 				optionList[$optionCount]="$option";
 				optionCount=$((optionCount+1));
@@ -116,7 +116,7 @@ copy_job(){
 		correct_job=$?;
 		#check if genome exists and is needed
 		arrayContainsElement "genome" "${OPTION_ARRAY[@]}";
-		containsGenome=$?;		
+		containsGenome=$?;
 		if [ "$containsGenome" == 0 ];
 		then
 			check_genome ${VALUE_ARRAY["genome"]};
@@ -133,13 +133,14 @@ copy_job(){
 			prefix=${VALUE_ARRAY["prefix"]};
 		fi
 		if [ "$correct_job" == 0 ] && [ "$correct_species" == 0 ];
-        	then
+		then
 			#copy the job
-			cp $BASEDIR/../scripts/*/$1.* $JOBDIR;
-			if [ -f $JOBDIR/$1.pbs ];
+			cp $BASEDIR/../scripts/*/$1* $JOBDIR;
+			if [ -f $JOBDIR/$1.script ];
 			then
-				mv $JOBDIR/$1.pbs $JOBDIR/$prefix$1.pbs;
-				copy_and_correct_script $JOBDIR/$prefix$1.pbs;
+				mv $JOBDIR/$1.script $JOBDIR/$prefix$1.$extention;
+				script_to_engine $JOBDIR/$prefix$1.$extention;
+				copy_and_correct_script $JOBDIR/$prefix$1.$extention;
 			fi
 			if [ -f $JOBDIR/$1.prolog.sh ];
 			then
@@ -148,8 +149,8 @@ copy_job(){
 			fi
 			if [ -f $JOBDIR/$1.epilog.sh ];
 			then
-				mv $JOBDIR/$1.epilog.pbs $JOBDIR/$prefix$1.epilog.pbs;
-				copy_and_correct_script $JOBDIR/$prefix$1.epilog.pbs;
+				mv $JOBDIR/$1.epilog.sh $JOBDIR/$prefix$1.epilog.sh;
+				copy_and_correct_script $JOBDIR/$prefix$1.epilog.sh;
 			fi
 			echo "Copied the job $1";
 		fi

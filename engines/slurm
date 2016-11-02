@@ -1,0 +1,10 @@
+#!/bin/bash -l
+#SBATCH -t WALLTIME
+#SBATCH --mem=MEMORY
+#SBATCH -N NODES
+#SBATCH -n CORES_PER_NODE
+#SBATCH --mail-user=MAIL
+#SBATCH --mail-type=ALL
+#SBATCH --job-name=NAME
+#SBATCH --account=default_project
+#SBATCH --partition=PARTITION

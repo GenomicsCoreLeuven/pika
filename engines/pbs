@@ -1,0 +1,9 @@
+#!/bin/bash -l
+#PBS -l walltime=WALLTIME
+#PBS -l mem=MEMORY
+#PBS -l nodes=NODES:ppn=CORES_PER_NODE
+#PBS -M MAIL
+#PBS -m aeb
+#PBS -N NAME
+#PBS -A default_project
+#PBS -l partition=PARTITION

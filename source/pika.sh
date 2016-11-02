@@ -8,6 +8,7 @@ source $LIB_DIR/genomes.sh;
 source $LIB_DIR/pipelines.sh;
 source $LIB_DIR/extra_code.sh;
 source $LIB_DIR/modules.sh;
+source $LIB_DIR/engines.sh;
 
 ##Parameters found in the config file
 MAIL="";
@@ -18,6 +19,7 @@ JOBDIR="";
 EXTRA_MODULES="";
 MY_SCRATCH=~;
 MODULE_VERSION="";
+GRID_ENGINE="";
 declare -A MODULE_NAME_ARRAY=();
 declare -A MODULE_VERSION_ARRAY=();
 ##Set the paramters from the config file
@@ -27,8 +29,9 @@ set_genome_dir;
 set_module_version;
 set_extra_modules;
 set_my_scratch;
+set_grid_engine;
 load_modules;
-
+set_grid_parameters;
 #version
 get_version(){
 	echo "$VERSION";
@@ -91,7 +94,7 @@ show_help(){
 }
 
 
-#PROGRAM
+#PROGRAM MAIN
 if [ "$#" -eq 0 ]
 then
     show_help;
@@ -140,6 +143,13 @@ else
 			MODULE_VERSION="${VALUE_ARRAY[MODULE_VERSION]}";
 			load_modules;
 		fi
+	fi
+	arrayContainsElement "GRID" "${OPTION_ARRAY[@]}";
+	containsGrid=$?;
+	if [ "$containsGrid" == 0 ];
+	then
+		change_grid ${VALUE_ARRAY[GRID]};
+		set_grid_parameters;
 	fi
 
     case "$1" in

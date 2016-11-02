@@ -1,0 +1,48 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	20gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	1
+##[RUN] NAME	freebayes
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 16.08
+##[HELP] This script is deprecated
+##[HOWTO] #This script is deprecated
+#extra_modules
+module load freebayes
+
+PROJECT_DIR="";
+GENOME_DIR="";
+BAM_DIR="$PROJECT_DIR/mapped";
+FREEBAYES_OPTIONS="-m 20 -q 15 --use-duplicate-reads --ploidy 2 ";
+FREEBAYES_OUTPUT_FILE_NAME="freebayes.m20.q15.useduplicates.ploidy2.vcf";
+OUTPUT_DIR="$PROJECT_DIR/snp_calling";
+SCRATCH_DIR=~;
+
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+mkdir -p $TMP_DIR/genome;
+cd $TMP_DIR/genome;
+rsync -ahrL $GENOME_DIR/genome.fa* .;
+mkdir -p $TMP_DIR/bams;
+cd $TMP_DIR/bams;
+rsync -ahrL $BAM_DIR/*bam* .;
+cd $TMP_DIR;
+
+bamfiles="";
+for i in `ls -1 -d $TMP_DIR/bams/*bam`;
+do
+	bamfiles="$bamfiles $i";
+done
+
+freebayes --fasta-reference $TMP_DIR/genome/genome.fa $FREEBAYES_OPTIONS $bamfiles > $TMP_DIR/$FREEBAYES_OUTPUT_FILE_NAME;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$FREEBAYES_OUTPUT_FILE_NAME .;
+rm -rf $TMP_DIR/genome;
+rm -rf $SCRATCH_DIR/bams;

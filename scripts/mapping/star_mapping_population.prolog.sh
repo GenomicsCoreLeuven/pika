@@ -7,10 +7,11 @@ THREADS=1;
 ENSEMBL="current";
 SCRATCH_DIR=~;
 
-cd $SCRATCH_DIR;
-mkdir tmp.$PBS_JOBID;
-MY_TMP_DIR="$SCRATCH_DIR/tmp.$PBS_JOBID";
-cd tmp.$PBS_JOBID;
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID/genome;
+
+MY_TMP_DIR="$SCRATCH_DIR/$JOBID/genome";
+cd $MY_TMP_DIR;
 rsync -ahr $GENOME_DIR/genome.fa .;
 rsync -ahr $GENOME_DIR/Ensembl/$ENSEMBL/genes.gtf .;
 

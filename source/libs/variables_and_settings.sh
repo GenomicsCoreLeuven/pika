@@ -12,6 +12,7 @@ check_config_file(){
 		echo "Standard extra modules command: $EXTRA_MODULES";
 		echo "Standard module version: $MODULE_VERSION";
 		echo "Standard scratch storage: $MY_SCRATCH";
+		echo "Grid engine: $GRID_ENGINE";
 	else
 		echo "No config file found";
 		echo -n "Do you want to create a config file [y/n]: ";
@@ -27,7 +28,7 @@ check_config_file(){
 
 set_mail(){
 	if [ -f ~/.pika_config ];
-        then
+	then
 		MAIL=`grep "mail=" ~/.pika_config | awk -v FS="=" '{print $2;}'`;
 	else
 		MAIL="";
@@ -35,11 +36,11 @@ set_mail(){
 }
 
 set_billing(){
-        if [ -f ~/.pika_config ];
-        then
-                BILLING=`grep "billing=" ~/.pika_config | awk -v FS="=" '{print $2;}'`;
-        else
-                BILLING="default_project";
+	if [ -f ~/.pika_config ];
+	then
+		BILLING=`grep "billing=" ~/.pika_config | awk -v FS="=" '{print $2;}'`;
+	else
+		BILLING="default_project";
 	fi
 }
 
@@ -61,6 +62,15 @@ set_module_version(){
 	fi
 }
 
+set_grid_engine(){
+	if [ -f ~/.pika_config ];
+	then
+		GRID_ENGINE=`grep "grid_engine=" ~/.pika_config | awk -v FS="=" '{print $2;}'`;
+	else
+		GRID_ENGINE="sh";
+	fi
+}
+
 set_my_scratch(){
 	if [ -f ~/.pika_config ];
 	then
@@ -68,6 +78,25 @@ set_my_scratch(){
 	else
 		MY_SCRATCH=~;
 	fi
+}
+
+is_correct_grid(){
+	correct_grid=0;
+	check_engine_exists $1;
+	correct_grid=$?;
+	return "$correct_grid";
+}
+
+change_grid(){
+	is_correct_grid $1;
+	correct_grid=$?;
+	if [ "$correct_grid" == "0" ];
+	then
+		GRID_ENGINE=$1;
+	else
+		echo "The given grid engine is not supported";
+	fi
+	return "$correct_grid";
 }
 
 change_my_scratch(){
@@ -85,28 +114,30 @@ change_my_scratch(){
 change_config(){
 	#create a config file
 	touch ~/.pika_config;
-        echo -n "Please insert your mail adress [current: $MAIL]: ";
-        read mail;
-        echo -n "Please insert the default billing account [current: $BILLING]: ";
-        read billing;
-        echo "Please insert the default genome directory [current: $GENOMEDIR]: ";
-        read genomedir;
+	echo -n "Please insert your mail adress [current: $MAIL]: ";
+	read mail;
+	echo -n "Please insert the default billing account [current: $BILLING]: ";
+	read billing;
+	echo "Please insert the default genome directory [current: $GENOMEDIR]: ";
+	read genomedir;
 	echo "Please insert your Extra Modules Command [current: $EXTRA_MODULES]: ";
 	read extramodules;
 	echo "Please insert the to use module version [current: $MODULE_VERSION]: ";
 	read moduleversion;
 	echo "Please insert the to use scratch storage [current: $MY_SCRATCH]: ";
 	read myscratch;
+	echo -n "Please insert the to use grid engine [current: $GRID_ENGINE]: ";
+	read grid_engine;
 	if [ "$mail" != "" ]
 	then  
-        	echo "mail=$mail" > ~/.pika_config;
+		echo "mail=$mail" > ~/.pika_config;
 		MAIL=$mail;
 	else
 		echo "mail=$MAIL" > ~/.pika_config;
 	fi
 	if [ "$billing" != "" ]
 	then
-        	echo "billing=$billing" >> ~/.pika_config;
+		echo "billing=$billing" >> ~/.pika_config;
 		BILLING=$billing;
 	else
 		echo "billing=$BILLING" >> ~/.pika_config;
@@ -155,6 +186,12 @@ change_config(){
 	else
 		echo "my_scratch=$MY_SCRATCH"  >> ~/.pika_config;
 	fi
+	if [ "$grid_engine" != "" ]
+	then
+		change_grid $grid_engine;
+		correct_grid=$?;
+		echo "grid_engine=$GRID_ENGINE"  >> ~/.pika_config;
+	fi
 	echo "New config file saved";
 }
 
@@ -175,11 +212,11 @@ set_jobs_dir(){
 }
 
 set_genome_dir(){
-        if [ -f ~/.pika_config ];
-        then
-                GENOMEDIR=`grep "genomes=" ~/.pika_config | awk -v FS="=" '{print $2;}'`;
-        else
-                GENOMEDIR="~";
-        fi
+	if [ -f ~/.pika_config ];
+	then
+		GENOMEDIR=`grep "genomes=" ~/.pika_config | awk -v FS="=" '{print $2;}'`;
+	else
+		GENOMEDIR="~";
+	fi
 }
 

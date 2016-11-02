@@ -29,6 +29,13 @@ for i in `ls -1 -d *.fastq.gz | grep -v '.R1.fastq.gz'`; do j=`echo $i | sed 's:
 echo "SAMPLE" > samples.txt;
 ls -1 -d ../../raw/*.R1.fastq.gz | sed 's:../../raw/::g' | sed 's:.R1.fastq.gz::g' >> samples.txt;
 
+#Trimming of the samples
+cd ../..;
+mkdir trimmed;
+cd raw;
+FRONT_TRIM_LENGTH=40;
+END_TRIM_LENGTH=40;
+for i in `ls -1 *R1.fastq.gz`; do j=`echo $i | sed "s:.gz::g"`; zcat $i | awk -v start=$FRONT_TRIM_LENGTH -v end=$END_TRIM_LENGTH '{if(NR%4==2 || NR%4==0){print substr($1,start,length($1)-start-end);}else{print $0}}' > ../trimmed/$j; gzip ../trimmed/$j; done
 
 ##[JOB] bwa_mapping_population
 ##[CHANGE] bwa_mapping_population	sed "s:BWA_OPTIONS=\"\":BWA_OPTIONS=\"-x pacbio\":"

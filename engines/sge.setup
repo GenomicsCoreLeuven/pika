@@ -1,0 +1,6 @@
+extention	sge
+submission	qsub
+job_id	$JOB_ID
+job_array_index	$SGE_TASK_ID
+job_array	-t ARRAY_INTERVAL
+chain	-w "done(JOBID)"
