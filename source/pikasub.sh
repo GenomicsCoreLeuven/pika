@@ -79,6 +79,11 @@ start_batch_job(){
 			echo "No file with the path: ${VALUE_ARRAY["-data"]} found";
 			exit 1;
 		fi
+		if [ `grep "#batchline" ${VALUE_ARRAY["-batch"]} | wc -l` == "0" ];
+		then
+			echo "This is not a batch script";
+			exit 1;
+		fi
 		#check if job array can be executed
 		arrayContainsElement "job_array" "${ENGINE_NAME_ARRAY[@]}";
 		containsJobArray=$?
@@ -95,7 +100,7 @@ start_batch_job(){
 		jobNr=`cat ${VALUE_ARRAY["-data"]} | wc -l | awk '{print $1-1;}'`;
 		echo "Found $jobNr tasks";
 		#add the batch line to the file
-		batchline="awk -v linenr="${ENGINE_VALUE_ARRAY["job_array_index"]}" -v FS=',' '{if(NR==1){for(i=0; i<=NF; i++){arr[i]=\$i;}}if(NR==(linenr+1)){for(i=0; i<=NG; i++){print arr[i]\"=\"\$i\";\";}}}' ${VALUE_ARRAY["-data"]} | sh;";
+		batchline="awk -v linenr="${ENGINE_VALUE_ARRAY["job_array_index"]}" -v FS=',' '{if(NR==1){for(i=1; i<=NF; i++){arr[i]=\$i;}}if(NR==(linenr+1)){for(i=1; i<=NF; i++){print arr[i]\"=\"\$i\";\";}}}' ${VALUE_ARRAY["-data"]} | sh;";
 		sed "s:#batchline:$batchline:g" ${VALUE_ARRAY["-batch"]} > ${VALUE_ARRAY["-batch"]}".tmp";
 		mv ${VALUE_ARRAY["-batch"]}".tmp" ${VALUE_ARRAY["-batch"]};
 		execution_command=$execution_command" "${ENGINE_VALUE_ARRAY["job_array"]};
