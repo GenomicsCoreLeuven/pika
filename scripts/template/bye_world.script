@@ -41,4 +41,6 @@ cd $TMP_DIR;
 echo "$LINE" > "bye_"$NAME".txt";
 #here the scratch directory is created, and hello_world is written into a file.
 
+mkdir -p $OUTPUT_DIR;
+rsync $TMP_DIR/* $OUTPUT_DIR;
 rm -r $TMP_DIR;
