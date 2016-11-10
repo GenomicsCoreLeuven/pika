@@ -2,10 +2,14 @@
 
 show_jobs(){
 	jobdir="$BASEDIR/../scripts/";
-	for category in `ls -1 -d $jobdir* | sed "s:$jobdir::g"`;
+	liststring=`ls -d $jobdir* | sed "s:$jobdir:,:g" | tr -dc '[:print:]' | sed 's:^,::g'`;
+	IFS=', ' read -r -a array <<< "$liststring";
+	for category in ${array[@]};
 	do
 		echo $category;	
-		for task in `ls -1 -d $BASEDIR/../scripts/$category/*.script | sed "s:$BASEDIR/../scripts/$category/::g" | sed 's/.script//g'`;
+		taskstring=`ls -1 -d $BASEDIR/../scripts/$category/*.script | sed "s:$BASEDIR/../scripts/$category/:,:g" | sed 's/.script//g' | tr -dc '[:print:]' | sed 's:^,::g'`;
+		IFS=', ' read -r -a taskarray <<< "$taskstring";
+		for task in ${taskarray[@]};
 		do
 			printf "%-20s  %-20s \n" "" "$task";
 		done
