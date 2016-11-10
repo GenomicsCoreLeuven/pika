@@ -37,7 +37,9 @@ mkdir -p $SCRATCH_DIR/$JOBID;
 TMPDIR=$SCRATCH_DIR/$JOBID;
 TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
-echo "Hello world" > hello_world.txt;
+
+mkdir -p $OUTPUT_DIR;
+echo "Hello world" > $OUTPUT_DIR/hello_world.txt;
 #here the scratch directory is created, and hello_world is written into a file.
 
 rm -r $TMP_DIR;
