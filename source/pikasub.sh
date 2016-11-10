@@ -43,7 +43,7 @@ show_help(){
 
 copy_submitted_file(){
 	local file=`pwd`;
-	mkdir -p submitted;
+	mkdir -p $file/submitted;
 	cp $1 $file/submitted/$now"_"$1;
 	file=$file"/submitted/"$now"_"$1;
 	echo "$file";
@@ -53,7 +53,6 @@ start_single_job(){
 	local file=$1;
 	file=$(copy_submitted_file $file);
 	execution_command=${ENGINE_VALUE_ARRAY["submission"]}" "$file;
-	echo $execution_command;
 }
 
 start_batch_job(){
@@ -123,9 +122,7 @@ start_batch_job(){
 				execution_command=$execution_command" "$to_add;
 			fi
 	done
-execution_command=$execution_command" "${VALUE_ARRAY["-batch"]};	
-echo $execution_command;
-
+	execution_command=$execution_command" "${VALUE_ARRAY["-batch"]};	
 }
 
 #PROGRAM MAIN
@@ -181,4 +178,5 @@ else
 		fi
 	fi
 echo $execution_command;
+echo $execution_command | sh;
 fi
