@@ -1,9 +1,8 @@
 #!/bin/bash -l
-#$ -l h_rt=WALLTIME_SECONDS
-#$ -l mem_free=MEMORY
-#$ -pe TOTAL_CORES
+#$ -l h_rt=SECONDS
+#$ -l h_vmem=MEMORY
 #$ -M MAIL
 #$ -m aeb
 #$ -N NAME
 #$ -A default_project
-#$ -l PARTITION
+#$ -cwd

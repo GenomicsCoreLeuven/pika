@@ -46,9 +46,20 @@ script_to_engine(){
 			engine_script_array["$key"]="$value";
 		fi
 	done < $script;
-	engine_script_array["WALLTIME_SECONDS"]=`echo ${engine_script_array["WALLTIME"]} | awk -v FS=":" '{tot=0; for(i=1; i<=NF; i++){tot=((tot*60) + $i)} print tot;}'`;
+	engine_script_array["SECONDS"]=`echo ${engine_script_array["WALLTIME"]} | awk -v FS=":" '{tot=0; for(i=1; i<=NF; i++){tot=((tot*60) + $i)} print tot;}'`;
 	engine_script_array["TOTAL_CORES"]=$((${engine_script_array["NODES"]} * ${engine_script_array["CORES_PER_NODE"]}));
-	params=("WALLTIME" "MEMORY" "TOTAL_CORES" "NAME" "NODES" "CORES_PER_NODE" "PARTITION" "WALLTIME_SECONDS");
+	params=("WALLTIME" "MEMORY" "TOTAL_CORES" "NAME" "NODES" "CORES_PER_NODE" "PARTITION" "SECONDS");
+	arrayContainsElement "MEMTYPE" "${ENGINE_NAME_ARRAY[@]}";
+	memtype=$?;
+	if [ "$memtype" == 0 ];
+	then
+		if [ "${ENGINE_VALUE_ARRAY["MEMTYPE"]}" == "UPPER" ];
+		then
+			engine_script_array["MEMORY"]=`echo ${engine_script_array["MEMORY"]} | sed 's:gb:G:g' | sed 's:mb:M:g' | sed 's:GB:G:g' | sed 's:MB:M:g'`;
+		else
+			engine_script_array["MEMORY"]=`echo ${engine_script_array["MEMORY"]} | sed 's:G:gb:g' | sed 's:M:mb:g' | sed 's:GB:gb:g' | sed 's:MB:mb:g'`;
+		fi
+	fi
 	for i in ${params[@]};
 	do
 		if [ "${engine_script_array[$i]}" == "" ];
