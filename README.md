@@ -3,10 +3,10 @@
 [![DOI](https://zenodo.org/badge/23912/GenomicsCoreLeuven/pika.svg)](https://zenodo.org/badge/latestdoi/23912/GenomicsCoreLeuven/pika) [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 
 pika is the *Pipeline Integration Kit for hpc Analysis*. 
-pika, named after the *Ochotona* species, is originally aimed to create bioinformatics pipelines from pbs scripts. This for an easy hpc usage for Biological researchers. However the implementation of pika is completely independent from it's pipelines and scripts. Resulting in a tool available for any research field.
+pika is originally aimed to create bioinformatics pipelines from pbs scripts. This for an easy hpc usage for Biological researchers. However the implementation of pika is completely independent from it's pipelines, scripts, modules and grid engine. Resulting in a tool available for any research field on any computer or cluster.
 
 ##Usage
-The main script is found in the source directory. Just execute the pika.sh file. First execution will ask some configuration parameters. Some standard pipelines and scripts are already included. pika should work out of the box on the [vsc](https://www.vscentrum.be/). If used on other hpc systems, probably the modules will have to change (these modules are always listed at the top).   
+The main script is found in the source directory. Just execute the pika.sh file (best is to make an alias, including the complete path to the script (use bash as execution, not sh)). First execution will ask some configuration parameters (pika change config). Some standard pipelines and scripts are already included. pika should work out of the box on the [vsc](https://www.vscentrum.be/). If used on other hpc systems, probably the modules will have to change (these can be found in the modules directory).   
 
 
 #Download
@@ -14,16 +14,14 @@ The code of pika is found in the source directory. All scripts/jobs (pbs) are fo
 ###Release Download
 The releases can be downloaded in the release tab or with by clicking on the download button. Just unpack the download, and the tool is ready to use.
 ###Git clone
-On the vsc:
+On the vsc, you need to switch to the latest toolchain (source switch_to_2015a):
 ```bash
-source switch_to_2015a
-module load git/2.9.2-intel-2015a
+module load git
 git clone https://github.com/GenomicsCoreLeuven/pika.git
 #when the clone is ready, the executable is found in source/pike.sh
 
 #to update your current version use:
-source switch_to_2015a
-module load git/2.9.2-intel-2015a
+module load git
 git pull
 ```
 
