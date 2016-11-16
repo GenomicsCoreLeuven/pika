@@ -15,6 +15,11 @@
 ##[HOWTO] #If no worker script is needed, like here only the qsub command is needed:
 ##[HOWTO] qsub hello_world.pbs
 ##[HOWTO] #Note that the executable line does not start with #, also in the pipelines and in the tool the ##[HOWTO] will be trimmed.
+##
+##[HELP] Options:
+##[HELP] text: the text to print to the file
+##[OPTIONS] text	optional	sed "s:TEXT=\"Hello world\":TEXT=\"value\":g"
+
 
 #loading the modules
 #extra_modules
@@ -29,6 +34,7 @@ GENOME_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/input";
 OUTPUT_DIR="$PROJECT_DIR/output";
 SCRATCH_DIR=~;
+TEXT="Hello world";
 
 #the actual script
 ##here the actual code of the script is written. There are no limitations to the code itself, as long as it is well documented in the help, howto, and parameters.
@@ -39,7 +45,7 @@ TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
 mkdir -p $OUTPUT_DIR;
-echo "Hello world" > $OUTPUT_DIR/hello_world.txt;
+echo $TEXT > $OUTPUT_DIR/hello_world.txt;
 #here the scratch directory is created, and hello_world is written into a file.
 
 rm -r $TMP_DIR;
