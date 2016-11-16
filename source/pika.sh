@@ -1,6 +1,7 @@
 #!/bin/sh
 VERSION="pika 16.08 dev";
-BASEDIR=$(dirname $0);
+#BASEDIR=$(dirname $0);
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 LIB_DIR="$BASEDIR/libs";
 source $LIB_DIR/variables_and_settings.sh;
 source $LIB_DIR/jobs.sh;
