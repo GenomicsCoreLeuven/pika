@@ -1,7 +1,7 @@
 #!/bin/sh
 
 show_pipelines(){
-	jobdir="$BASEDIR/../pipelines/";
+	jobdir="$BASEDIR/../pipelines/$MODULE_VERSION/";
 	for pipeline in `ls -1 -d $jobdir* | sed "s:$jobdir::g"`;
 	do
 		echo $pipeline;	
@@ -15,7 +15,7 @@ show_pipeline_help(){
 	if [ "$correct_pipeline" == 0 ]
 	then
 		echo "The help of $1";
-		grep "##\[HELP\]" $BASEDIR/../pipelines/$1 | sed 's/##\[HELP\] /\t/g';		
+		grep "##\[HELP\]" $BASEDIR/../pipelines/$MODULE_VERSION/$1 | sed 's/##\[HELP\] /\t/g';		
 	fi
 }
 
@@ -25,7 +25,7 @@ show_pipeline_howto(){
         if [ "$correct_pipeline" == 0 ]
         then
                 echo "The howto of $1";
-                grep "##\[HOWTO\]" $BASEDIR/../pipelines/$1 | sed 's/##\[HOWTO\] /\t/g';
+                grep "##\[HOWTO\]" $BASEDIR/../pipelines/$MODULE_VERSION/$1 | sed 's/##\[HOWTO\] /\t/g';
         fi
 }
 
@@ -38,16 +38,16 @@ check_pipeline_exists(){
                 correct_pipeline=1;
         else
                 #a pipeline is given
-                if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -eq 0 ];
+                if [ `ls -1 -d $BASEDIR/../pipelines/$MODULE_VERSION/$1 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #pipeline does not exists
-                        echo "No pipeline found with this name: $BASEDIR/../pipelines/$1";
+                        echo "No pipeline found with this name: $BASEDIR/../pipelines/$MODULE_VERSION/$1";
                         correct_pipeline=1;
                 fi
-                if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -gt 1 ];
+                if [ `ls -1 -d $BASEDIR/../pipelines/$MODULE_VERSION/$1 2>/dev/null | wc -l` -gt 1 ];
                 then
                         #multiple pipelines for the name
-                        echo "Multiple pipelines found with this name: $BASEDIR/../pipelines/$1";
+                        echo "Multiple pipelines found with this name: $BASEDIR/../pipelines/$MODULE_VERSION/$1";
                         correct_pipeline=1;
                 fi
         fi
@@ -62,13 +62,13 @@ check_pipeline(){
 		correct_pipeline=1;
         else
                 #a pipeline is given
-                if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -eq 0 ];
+                if [ `ls -1 -d $BASEDIR/../pipelines/$MODULE_VERSION/$1 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #pipeline does not exists
                         echo "No pipeline found with this name";
 			correct_pipeline=1;
                 fi
-		if [ `ls -1 -d $BASEDIR/../pipelines/$1 2>/dev/null | wc -l` -gt 1 ];
+		if [ `ls -1 -d $BASEDIR/../pipelines/$MODULE_VERSION/$1 2>/dev/null | wc -l` -gt 1 ];
 		then
 			#multiple pipelines for the name
 			echo "Multiple pipelines found with this name";
@@ -78,7 +78,7 @@ check_pipeline(){
 		then
 			#correct pipeline
 			echo "checking jobs mandatory parameters";
-			joblist=(`grep "##\[JOB\]" $BASEDIR/../pipelines/$1 | awk '{if(NR==1){list=$2}else{list=list" "$2}}END{print list;}'`);
+			joblist=(`grep "##\[JOB\]" $BASEDIR/../pipelines/$MODULE_VERSION/$1 | awk '{if(NR==1){list=$2}else{list=list" "$2}}END{print list;}'`);
 			for job in "${joblist[@]}";
 			do
 				check_job $job;
@@ -123,11 +123,12 @@ copy_pipeline(){
 			mkdir -p $JOBDIR/$1;
 			JOBDIR="$JOBDIR/$1";
 			cd $JOBDIR;
-			#cat $BASEDIR/../pipelines/$1 | grep -v "##\[HELP\]" | grep -v "##\[CHANGE\]" | sed "s:##\[HOWTO\] ::g" > $1.howto;
+			#cat $BASEDIR/../pipelines/$MODULE_VERSION/$1 | grep -v "##\[HELP\]" | grep -v "##\[CHANGE\]" | sed "s:##\[HOWTO\] ::g" > $1.howto;
+			oldIFS=$IFS;
 			IFS=$'\n';
 			job="";
 			jobNR=0;
-			for line in `cat $BASEDIR/../pipelines/$1`;
+			for line in `cat $BASEDIR/../pipelines/$MODULE_VERSION/$1`;
 			do
 				#check if line is ##[JOB]
 				case $line in
@@ -145,7 +146,7 @@ copy_pipeline(){
 						copy_job $job;
 						#insert the howto of the job into the howto of the pipeline
 						echo "" >> $1.howto;
-						grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$job.script | sed "s:##\[HOWTO\] ::g" | sed "s:$job:$prefix$job:g" >> $1.howto;
+						grep "##\[HOWTO\]" $BASEDIR/../scripts/$MODULE_VERSION/*/$job.script | sed "s:##\[HOWTO\] ::g" | sed "s:$job:$prefix$job:g" >> $1.howto;
 						echo "" >> $1.howto;
 					;;
 					"##[CHANGE]"*)
@@ -167,7 +168,7 @@ copy_pipeline(){
 				esac
 			done
 			unset IFS;
-
+			IFS=$oldIFS;
 
 
 			echo "Copied all jobs of the pipeline $1. Added the file $1.howto with the description on how to run this pipeline.";
@@ -195,7 +196,8 @@ copy_pipeline_backup(){
                         do
                                 #copy the job to the job directory
                                 copy_job $job $2;
-                                IFS=$'\n';
+                                oldIFS=$IFS;
+				IFS=$'\n';
                                 #if extra changes are requered, do the extra changes
                                 for change in `grep "##\[CHANGE\] $job" $BASEDIR/../pipelines/$1 | awk -v FS='\t' '{print $2;}'`;
                                 do
@@ -204,8 +206,9 @@ copy_pipeline_backup(){
                                         rm $job.tmp;
                                 done
                                 unset IFS;
+				IFS=$oldIFS;
                                 #insert the howto of the job into the howto of the pipeline
-                                insertHowto=`grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$job.pbs | sed "s:##\[HOWTO\] ::g" | awk '{printf $0"___";}'`;
+                                insertHowto=`grep "##\[HOWTO\]" $BASEDIR/../scripts/$MODULE_VERSION/*/$job.pbs | sed "s:##\[HOWTO\] ::g" | awk '{printf $0"___";}'`;
                                 cat $1.howto | sed "s<##\[JOB\] $job<${insertHowto}<g" | sed 's/___/\n/g'> $1.howto.tmp;
                                 mv $1.howto.tmp $1.howto;
                         done

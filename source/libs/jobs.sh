@@ -1,19 +1,21 @@
 #!/bin/sh
 
 show_jobs(){
-	jobdir="$BASEDIR/../scripts/";
+	jobdir="$BASEDIR/../scripts/$MODULE_VERSION/";
 	liststring=`ls -d $jobdir* | sed "s:$jobdir:,:g" | tr -dc '[:print:]' | sed 's:^,::g'`;
+	oldIFS=$IFS
 	IFS=', ' read -r -a array <<< "$liststring";
 	for category in ${array[@]};
 	do
 		echo $category;	
-		taskstring=`ls -1 -d $BASEDIR/../scripts/$category/*.script | sed "s:$BASEDIR/../scripts/$category/:,:g" | sed 's/.script//g' | tr -dc '[:print:]' | sed 's:^,::g'`;
+		taskstring=`ls -1 -d $BASEDIR/../scripts/$MODULE_VERSION/$category/*.script | sed "s:$BASEDIR/../scripts/$MODULE_VERSION/$category/:,:g" | sed 's/.script//g' | tr -dc '[:print:]' | sed 's:^,::g'`;
 		IFS=', ' read -r -a taskarray <<< "$taskstring";
 		for task in ${taskarray[@]};
 		do
 			printf "%-20s  %-20s \n" "" "$task";
 		done
 	done
+	IFS=$oldIFS;
 }
 
 
@@ -24,7 +26,7 @@ show_job_help(){
 	then
 		echo "The help of $1";
 		#correct job
-		grep "##\[HELP\]" $BASEDIR/../scripts/*/$1.script | sed 's/##\[HELP\] /\t/g';
+		grep "##\[HELP\]" $BASEDIR/../scripts/$MODULE_VERSION/*/$1.script | sed 's/##\[HELP\] /\t/g';
 	fi
 }
 
@@ -35,7 +37,7 @@ show_job_howto(){
         then
                 echo "The howto of $1";
                 #correct job
-                grep "##\[HOWTO\]" $BASEDIR/../scripts/*/$1.script | sed 's/##\[HOWTO\] /\t/g';
+                grep "##\[HOWTO\]" $BASEDIR/../scripts/$MODULE_VERSION/*/$1.script | sed 's/##\[HOWTO\] /\t/g';
         fi
 }
 
@@ -47,13 +49,13 @@ check_job_exists(){
 		correct=1;
 	else
 		#a jobname is given
-                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -eq 0 ];
+                if [ `ls -1 -d $BASEDIR/../scripts/$MODULE_VERSION/*/$1.script 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #jobname does not exists
                         echo "No job found with this name: $1";
                         correct=1;
                 fi
-                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -gt 1 ];
+                if [ `ls -1 -d $BASEDIR/../scripts/$MODULE_VERSION/*/$1.script 2>/dev/null | wc -l` -gt 1 ];
                 then
                         #multiple job for the name
                         echo "Multiple jobs found with this name: $1";
@@ -72,13 +74,13 @@ check_job(){
 		correct=1;
         else
                 #a jobname is given
-                if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -eq 0 ];
+                if [ `ls -1 -d $BASEDIR/../scripts/$MODULE_VERSION/*/$1.script 2>/dev/null | wc -l` -eq 0 ];
                 then
                         #jobname does not exists
                         echo "No job found with this name: $1";
 			correct=1;
                 fi
-		if [ `ls -1 -d $BASEDIR/../scripts/*/$1.script 2>/dev/null | wc -l` -gt 1 ];
+		if [ `ls -1 -d $BASEDIR/../scripts/$MODULE_VERSION/*/$1.script 2>/dev/null | wc -l` -gt 1 ];
 		then
 			#multiple job for the name
 			echo "Multiple jobs found with this name: $1";
@@ -89,7 +91,7 @@ check_job(){
 			#check the options
 			declare -A optionList;
 			optionCount=0;
-			for option in `grep "##\[OPTIONS\]" $BASEDIR/../scripts/*/$1.script | grep "mandatory" | awk '{print $2;}'`;
+			for option in `grep "##\[OPTIONS\]" $BASEDIR/../scripts/$MODULE_VERSION/*/$1.script | grep "mandatory" | awk '{print $2;}'`;
 			do
 				optionList[$optionCount]="$option";
 				optionCount=$((optionCount+1));
@@ -139,7 +141,7 @@ copy_job(){
 		if [ "$correct_job" == 0 ] && [ "$correct_species" == 0 ];
 		then
 			#copy the job
-			cp $BASEDIR/../scripts/*/$1* $JOBDIR;
+			cp $BASEDIR/../scripts/$MODULE_VERSION/*/$1* $JOBDIR;
 			if [ -f $JOBDIR/$1.script ];
 			then
 				mv $JOBDIR/$1.script $JOBDIR/$prefix$1.$extention;

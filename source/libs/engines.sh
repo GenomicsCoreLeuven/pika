@@ -78,6 +78,7 @@ script_to_engine(){
 
 set_grid_parameters(){
 	engine_param_count=0;
+	oldIFS=$IFS;
 	IFS='';
 	while read -r line;
 	do
@@ -88,6 +89,7 @@ set_grid_parameters(){
 		((engine_param_count++));
 	done < $BASEDIR/../engines/$GRID_ENGINE".setup";
 	extention=${ENGINE_VALUE_ARRAY["extention"]};
+	IFS=$oldIFS;
 }
 
 

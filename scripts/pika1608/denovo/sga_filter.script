@@ -1,0 +1,45 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	3:00:00:00
+##[RUN] MEMORY	120gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	sga_filter
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 16.08 
+##[HELP] This tool filters sga corrected data
+##[HELP] This script can be ran multithreaded (use the THREADS parameter)
+##[HELP] Runtime depends on the kmer and library size
+##
+##[HOWTO] #SGA filtesr
+##[HOWTO] #start the module:
+##[HOWTO] qsub sga_filter.pbs
+#extra_modules
+module load SGA
+
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/sga_merge";
+OUTPUT_DIR="$PROJECT_DIR/sga_filter";
+SCRATCH_DIR="$PROJECT_DIR/tmp/sga_filter_output";
+THREADS="20";
+#parameters discribed in the example:
+FILTER_OPTIONS="";
+#FILTER_OPTIONS:"-d 256 -x 2";
+
+#the script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/* .;
+gunzip *;
+
+sga filter $FILTER_OPTIONS -t $THREADS final.fastq;
+
+rm final.bwt final.fastq final.rbwt final.rsai final.sai;
+
+gzip *fa;
+mkdir -p $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/* $OUTPUT_DIR/;
+rm -rf $TMP_DIR;

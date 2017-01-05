@@ -1,0 +1,42 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	2:00:00:00
+##[RUN] MEMORY	120gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	stride_filter
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 16.08 
+##[HELP] This tool do the stride filter
+##[HELP] Runtime depends on the indexing step
+##
+##[HOWTO] #StriDe filter
+##[HOWTO] #start the module:
+##[HOWTO] qsub stride_filter.pbs
+#loading the modules
+#extra_modules
+module load Stride
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/stride_fmwalk";
+OUTPUT_DIR="$PROJECT_DIR/stride_filter";
+SCRATCH_DIR="$PROJECT_DIR/tmp";
+THREADS="20";
+FILTER_OPTIONS="--no-kmer-check";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/* .;
+gunzip *gz;
+
+stride filter -t $THREADS $FILTER_OPTIONS merged.fa;
+
+rm merged.fa;
+gzip *fa;
+mkdir -p $OUTPUT_DIR;
+rsync -ahrL $TMP_DIR/* $OUTPUT_DIR/;
+rm -rf $TMP_DIR;

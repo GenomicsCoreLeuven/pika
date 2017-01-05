@@ -1,0 +1,59 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	50gb
+##[RUN] NODES 1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	bam_read_merge_correction
+##[RUN]	ACCOUNT	default_project
+##[VERSION] pika 16.08 
+##[HELP] This is a worker script: it uses SAMPLE parameters
+##[HELP] This script will correct the overlap of reads that are not flashed by softclipping the second read
+##[HELP] This script will use only one cpu
+##[HELP] This script runs only a 1 minute per 1M reads
+##
+##[HOWTO] #BAM READ MERGE CORRECTION
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
+##[HOWTO] #This uses worker 
+##[HOWTO] module load worker
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch bam_read_merge_correction.pbs -data samples.txt
+
+#loading the modules
+#extra_modules
+module load SAMtools
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/mapped";
+OUTPUT_DIR="$PROJECT_DIR/mapped_corrected";
+SCRATCH_DIR=~;
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahr $SAMPLE_DIR/$SAMPLE.bam .;
+
+#NAME sort the BAM file
+samtools sort -n $SAMPLE.bam $SAMPLE.sorted; 
+rm $SAMPLE.bam
+#BAM to SAM
+samtools view -h $SAMPLE.sorted.bam > $SAMPLE.sorted.sam;
+rm $SAMPLE.sorted.bam;
+awk -f $PROJECT_DIR/jobs/bam_read_merge_correction.awk $SAMPLE.sorted.sam > $SAMPLE.corrected.sam 2> $SAMPLE.correction.log;
+rm $SAMPLE.sorted.sam;
+samtools view -hbS $SAMPLE.corrected.sam > $SAMPLE.corrected.bam;
+rm $SAMPLE.corrected.sam;
+samtools sort $SAMPLE.corrected.bam $SAMPLE;
+rm $SAMPLE.corrected.bam;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$SAMPLE.* .;
+
+rm -r $TMP_DIR;
+
+
