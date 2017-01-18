@@ -1,0 +1,25 @@
+#pipeline template
+#=================
+
+##[HELP] The pipeline template
+##[HELP] =====================
+##[HELP] 
+##[HELP] This help describes the functions of the pipeline. 
+##[HELP] It gives a short overview about which steps will be performed on the data.
+##[HELP] This help will be shown in the tool when "pipeline help NAME" is given as parameters
+
+##[HOWTO] #This is the howto of the pipeline.
+##[HOWTO] #This howto will be added in the pipeline.howto file, created in the jobs directory (with pipeline, as the name of the pipeline)
+##[HOWTO] #All commands for the start of the jobs, and short one-liners to edit needed data are inserted in this file
+
+#the job has the exact name of the pbs script.
+##[JOB] hello world
+#the change follows immediately on the job it applies to. It is change,space,the name of the job, tab, the command to add in the pipe (usually a sed, awk, ...)
+#In this case, the scratch directory is changed from the node scratch to the test folder in the data directory of the user
+##[CHANGE] hello_world	sed "s:SCRATCH_DIR=~:SCRATCH_DIR=\"~/test\":"
+#Multiple change commands can follow on the same job.
+
+
+#Comment in the file can be added, just like this.
+#Lines without # are executable lines (just like in bash), example:
+cat ~/test/hello_world.txt 

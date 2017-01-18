@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION="pika 16.08 dev";
+VERSION="pika 17.01 dev";
 #BASEDIR=$(dirname $0);
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 LIB_DIR="$BASEDIR/libs";
@@ -105,7 +105,8 @@ else
 	declare -A VALUE_ARRAY;
 	for a in "$@"; 
 	do
-		if (($i>=3));
+		#if (($i>=3));
+		if [[ $a == *"="* ]];
 		then
 		key=`echo "$a"| awk -v FS="=" '{print $1;}'`;
 		value=`echo "$a" | awk -v FS="=" '{print $2;}'`;

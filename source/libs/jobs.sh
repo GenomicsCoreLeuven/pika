@@ -187,6 +187,8 @@ copy_and_correct_script(){
 			module_version="${MODULE_VERSION_ARRAY[$module_name]}";
 			cat $script | sed "s:^module load $module_name$\|^module load $module_name;$:module load $module_version;:g" > $script.tmp;
 			mv $script.tmp $script;
+			cat $script | sed "s:^version_$module_name=\"$module_name\":version_$module_name=\"$module_version\":g" > $script.tmp;
+                        mv $script.tmp $script;
 			done
 		fi
 

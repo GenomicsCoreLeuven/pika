@@ -1,0 +1,19 @@
+#Quantseq pipeline
+
+##[HELP] GENOME Preparation Pipeline
+##[HELP] ===========================
+##[HELP] 
+##[HELP] The pipeline is just a collection of the creation of all needed indices for the tools
+
+##[HOWTO] #This script describes how to execute all tools to generate the needed indices for all tools
+
+#first download the genome in the directory (species_name/genome_version) and name it genome.fa
+
+##[JOB] bowtie_index
+
+##[JOB] bwa_index
+
+##[JOB] gatk_index
+
+##[JOB] star_index
+

@@ -170,7 +170,8 @@ copy_pipeline(){
 			unset IFS;
 			IFS=$oldIFS;
 
-
+			#remove .scripts
+			rm $JOBDIR/*script
 			echo "Copied all jobs of the pipeline $1. Added the file $1.howto with the description on how to run this pipeline.";
 		fi
 	fi

@@ -190,6 +190,12 @@ change_config(){
 	then
 		change_grid $grid_engine;
 		correct_grid=$?;
+		if [ "$correct_grid" == 0 ]
+		then
+			GRID_ENGINE=$grid_engine
+		fi
+		echo "grid_engine=$GRID_ENGINE"  >> ~/.pika_config;
+	else
 		echo "grid_engine=$GRID_ENGINE"  >> ~/.pika_config;
 	fi
 	echo "New config file saved";
