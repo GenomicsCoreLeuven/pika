@@ -1,5 +1,14 @@
 #!/bin/sh
 
+check_config_file_exist(){
+	if [ -f ~/.pika_config ];
+	then
+		return "0"
+	else
+		return "1"
+	fi
+}
+
 check_config_file(){
 	if [ -f ~/.pika_config ];
 	then

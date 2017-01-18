@@ -24,6 +24,13 @@ GRID_ENGINE="";
 declare -A MODULE_NAME_ARRAY=();
 declare -A MODULE_VERSION_ARRAY=();
 ##Set the paramters from the config file
+check_config_file_exist;
+config_exists=$?;
+if [ "$config_exists" != 0 ];
+then
+	echo "No config file, run pika change config first";
+	exit
+fi
 set_mail;
 set_billing;
 set_genome_dir;
