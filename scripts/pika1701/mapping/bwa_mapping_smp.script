@@ -1,8 +1,8 @@
 #!/bin/bash -l
 ##[RUN] WALLTIME	12:00:00
-##[RUN] MEMORY	490gb
-##[RUN] NODES	2
-##[RUN] CORES_PER_NODE	20
+##[RUN] MEMORY	3200gb
+##[RUN] NODES	14
+##[RUN] CORES_PER_NODE	10
 ##[RUN] NAME	bwa_mapping
 ##[RUN] ACCOUNT	default_project
 ##[RUN] PARTITION       smp1
@@ -41,7 +41,7 @@ OUTPUT_DIR="$PROJECT_DIR/mapped";
 #this can be NO (for regular files), FLASH (for only flashed data) or BOTH (for both flashed and unflashed data)
 FLASH="NO";
 SCRATCH_DIR=~;
-THREADS="20";
+THREADS="140";
 SAMPLE="";
 BWA_OPTIONS="";
 
