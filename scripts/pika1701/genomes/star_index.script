@@ -1,0 +1,35 @@
+#!/bin/bash -l
+###[RUN] WALLTIME        12:00:00
+###[RUN] MEMORY  20gb
+###[RUN] NODES   1
+###[RUN] CORES_PER_NODE  20
+###[RUN] NAME    star_index
+###[RUN] ACCOUNT default_project
+###[VERSION] pika 1701
+###[HELP] This tool will create the needed indexes for STAR mapping
+###[HELP] This script will use only one cpu
+###[HELP] This script has a long runtime (multiple houres)
+###
+###[HOWTO] #STAR index
+###[HOWTO] #the genome directory in this script has to be changed
+###[HOWTO] #the fasta file needs to be named genome.fa
+###[HOWTO] #start the module:
+###[HOWTO] qsub star_index.pbs
+#loading the modules
+#extra_modules
+module load STAR;
+version_STAR="STAR";
+
+PROJECT_DIR="";
+GENOME_DIR="$PROJECT_DIR";
+THREADS=20;
+ENSEMBL="current";
+SCRATCH_DIR=~;
+#the actual script
+
+#creating index
+cd $GENOME_DIR;
+mkdir -p $version_STAR;
+cd $version_STAR;
+rsync -ahrL $GENOME_DIR/genome.fa .;
+STAR --runThreadN $THREADS --runMode genomeGenerate --genomeDir $GENOME_DIR/$version_STAR --genomeFastaFiles $GENOME_DIR/$version_STAR/genome.fa;

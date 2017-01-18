@@ -1,0 +1,38 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	20gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	1
+##[RUN] NAME	gatk_index
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 1701
+##[HELP] This tool will create the bwa index for the genome
+##[HELP] This script will use only one cpu
+##[HELP] This script has a longer runtime (couple of houres)
+##
+##[HOWTO] #GATK index
+##[HOWTO] #the genome directory in the script has to be changed
+##[HOWTO] #the fasta file has to be named genome.fa
+##[HOWTO] #start the module:
+##[HOWTO] qsub gatk_index.pbs
+#loading the modules
+#extra_modules
+module load GATK
+module load SAMtools
+module load picard
+version_GATK="GATK"
+
+PROJECT_DIR="";
+GENOME_DIR="$PROJECT_DIR";
+
+#creating index
+
+cd $GENOME_DIR;
+mkdir -p $version_GATK;
+cd $version_GATK;
+rsync -ahrL $GENOME_DIR/genome.fa .;
+samtools faidx genome.fa
+picard CreateSequenceDictionary R=$GENOME_DIR/$version_GATK/genome.fa O=$GENOME_DIR/$version_GATK/genome.dict
+cd ..
+chmod 555 -R $version_GATK;
+

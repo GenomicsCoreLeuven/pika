@@ -1,0 +1,60 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	10:00:00
+##[RUN] MEMORY	30gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	gbsx
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 1701
+##[HELP] This is a worker script: it uses RUN parameters
+##[HELP] This tool will demultiplex runs with inline barcodes
+##[HELP] It needs a file barcodes.tsv (see gbsx help) in the run directory
+##[HELP] This script will use only one cpu per RUN
+##[HELP] This script runs for 1.5 houres per RUN using 20 threads
+##
+##[HOWTO] #GBSX
+##[HOWTO] #Create a data file (runs.txt), with a RUN column
+##[HOWTO] #The file system should be RUN_DIR/runname/ with the raw gziped fastq files, and the barcodes.tsv file (see gbsx website)
+##[HOWTO] #The barcodes.tsv is a tabdelimited file, with (no header) sample, barcode, enzyme
+##[HOWTO] #This uses worker
+##[HOWTO] #Change the number of nodes to the number of runs you want to demultiplex at once + 1
+##[HOWTO] module load worker
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch gbsx.pbs -data runs.txt -threaded 20
+#loading the modules
+#extra_modules
+module load gbsx
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+RUN_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/gbsx";
+SCRATCH_DIR=~;
+THREADS="20";
+
+#the actual script
+#do the copy and demultiplexing
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $RUN_DIR/$RUN/*.gz .;
+rsync -ahrL $RUN_DIR/$RUN/barcodes.tsv .;
+
+FILE1=`find $TMP_DIR -name '*R1*'`;
+FILE2=`find $TMP_DIR -name '*R2*'`;
+
+GBSX --Demultiplexer -t $THREADS -f1 $FILE1 -f2 $FILE2 -i $TMP_DIR/barcodes.tsv -o $TMP_DIR -gzip true; 
+
+rm *$RUN*.gz;
+rm barcodes.tsv;
+
+mkdir -p $OUTPUT_DIR/$RUN;
+cd $OUTPUT_DIR/$RUN;
+rsync -ahrL $TMP_DIR/* .;
+
+rm -rf $TMP_DIR;
+
+

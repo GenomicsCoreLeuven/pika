@@ -27,7 +27,7 @@ gzip *fastq;
 echo "SAMPLE" > samples.txt;
 ls -1 -d ../../raw/*.R1.fastq.gz | sed 's:../../raw/::g' | sed 's:.R1.fastq.gz::g' >> samples.txt;
 
-##[JOB] bwa_mapping_population
+##[JOB] bwa_mapping_smp
 
 ##[JOB] gatk
 

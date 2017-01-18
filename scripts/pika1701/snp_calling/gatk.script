@@ -1,0 +1,48 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	20gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	gatk	
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 1701
+##[HOWTO] #GATK variant calling
+##[HOWTO] #edit in this script the sample and genome directory
+##[HOWTO] #start the module:
+##[HOWTO] qsub gatk.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome      mandatory       sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] gatk_options: change the options of the mapper (standard: )
+##[OPTIONS] gatk_options optional        sed "s:GATK_OPTIONS=\"--genotyping_mode DISCOVERY -stand_emit_conf 10 -stand_call_conf 30\":GATK_OPTIONS=\"value\":g"
+##[HELP] sample: the name of the sample
+##[OPTIONS] sample      mandatory       sed "s:SAMPLE=\"\":SAMPLE\"value\":g"
+#extra_modules
+module load GATK
+version_GATK="GATK"
+
+PROJECT_DIR="";
+GENOME_DIR="";
+BAM_DIR="$PROJECT_DIR/mapped";
+GATK_OPTIONS="--genotyping_mode DISCOVERY -stand_emit_conf 10 -stand_call_conf 30";
+GATK_OUTPUT_FILE_NAME=$SAMPLE".gatk.vcf";
+OUTPUT_DIR="$PROJECT_DIR/snp_calling";
+SCRATCH_DIR=~;
+THREADS=20;
+SAMPLE="";
+
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $BAM_DIR/$SAMPLE*bam* .;
+
+gatk -T HaplotypeCaller -R $GENOME_DIR/$version_GATK/genome.fa -I $SAMPLE".bam" -o $GATK_OUTPUT_FILE_NAME -nct $THREADS;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$GATK_OUTPUT_FILE_NAME .;
+rm -rf $TMP_DIR;

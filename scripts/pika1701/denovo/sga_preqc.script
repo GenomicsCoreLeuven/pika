@@ -1,0 +1,50 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	2:00:00:00
+##[RUN] MEMORY	120gb
+##[RUN] NODES	2
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	sga_preqc
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 1701
+##[HELP] This is a worker script: it uses SAMPLE and THREADS parameters
+##[HELP] This tool will create a qc report for the input of the assemebly
+##[HELP] This script can be ran multithreaded
+##[HELP] This script runs a few houres per sample (depends on the input size)
+##[HELP] The sga_preprocess needs to be ran before this step
+##
+##[HOWTO] #SGA preqc
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and THREADS column
+##[HOWTO] #This uses worker
+##[HOWTO] module load worker
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch sga_preqc.pbs -data samples.txt -epilog sga_preqc_epilog.sh -threaded 20
+#
+##Options
+##[HELP] Options:
+##[HELP] genome: this option is used in the epilog. The sga example files should be in ../../sga_preqc_examples/
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+
+#loading the modules
+#extra_modules
+module load SGA
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/sga_preprocess";
+OUTPUT_DIR="$PROJECT_DIR/sga_preqc";
+SCRATCH_DIR="$PROJECT_DIR/tmp/sga_preqc_output";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/$SAMPLE* .;
+gunzip *gz;
+
+sga preqc -t $THREADS $SAMPLE.sga_readfile.fastq > $SAMPLE.preqc;
+
+mkdir -p $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$SAMPLE.preqc $OUTPUT_DIR/;
+rm -rf $TMP_DIR;
