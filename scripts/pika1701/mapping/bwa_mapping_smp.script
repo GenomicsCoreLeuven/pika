@@ -1,5 +1,5 @@
 #!/bin/bash -l
-##[RUN] WALLTIME	12:00:00
+##[RUN] WALLTIME	18:00:00
 ##[RUN] MEMORY	3200gb
 ##[RUN] NODES	14
 ##[RUN] CORES_PER_NODE	10
@@ -23,7 +23,7 @@
 ##[HELP] bwa_options: change the options of the mapper (standard: )
 ##[OPTIONS] bwa_options	optional	sed "s:BWA_OPTIONS=\"\":BWA_OPTIONS=\"value\":g"
 ##[HELP] sample: the name of the sample
-##[OPTIONS] sample	mandatory	sed "s:SAMPLE=\"\":SAMPLE\"value\":g"
+##[OPTIONS] sample	mandatory	sed "s:SAMPLE=\"\":SAMPLE=\"value\":g"
 
 
 #loading the modules

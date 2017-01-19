@@ -29,5 +29,5 @@ ls -1 -d ../../raw/*.R1.fastq.gz | sed 's:../../raw/::g' | sed 's:.R1.fastq.gz::
 
 ##[JOB] bwa_mapping_smp
 
-##[JOB] gatk
+##[JOB] gatk_smp
 

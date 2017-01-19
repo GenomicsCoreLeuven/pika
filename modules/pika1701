@@ -7,11 +7,12 @@ canu	canu/1.0-GCC-4.9.2
 FastQC	FastQC/0.11.5-Java-1.8.0_77
 FLASH	FLASH/1.2.10
 freebayes	freebayes/1.0.2-33-foss-2015a
-GATK	GATK/3.6-Java1.8.0_77
+GATK	GATK/3.7
 gbsx	gbsx/v1.3-Java1.8.0_77
 gbsy	gbsy/v0.0alpha-Java1.8.0_77
 HTSeq	HTSeq/0.6.1p1-intel-2015a-Python-2.7.9
 LINKS	LINKS/1.7
+parallel	parallel/20141122-GCC-4.9.2
 picard	picard/2.2.2-Java1.8.0_77
 R	R/3.3.1-foss-2015a-tcl
 SAMtools	SAMtools/1.1-intel-2015a
