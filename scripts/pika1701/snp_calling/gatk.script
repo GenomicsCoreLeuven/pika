@@ -17,7 +17,7 @@
 ##[HELP] gatk_options: change the options of the mapper (standard: )
 ##[OPTIONS] gatk_options optional        sed "s:GATK_OPTIONS=\"--genotyping_mode DISCOVERY -stand_emit_conf 10 -stand_call_conf 30\":GATK_OPTIONS=\"value\":g"
 ##[HELP] sample: the name of the sample
-##[OPTIONS] sample      mandatory       sed "s:SAMPLE=\"\":SAMPLE\"value\":g"
+##[OPTIONS] sample      mandatory       sed "s:SAMPLE=\"\":SAMPLE=\"value\":g"
 #extra_modules
 module load GATK
 version_GATK="GATK"

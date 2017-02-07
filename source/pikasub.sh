@@ -44,8 +44,9 @@ show_help(){
 copy_submitted_file(){
 	local file=`pwd`;
 	mkdir -p $file/submitted;
-	cp $1 $file/submitted/$now"_"$1;
-	file=$file"/submitted/"$now"_"$1;
+	filename=`echo $1 | awk -v FS="/" '{print $NF}'`;
+	cp $1 $file/submitted/$now"_"$filename;
+	file=$file"/submitted/"$now"_"$filename;
 	echo "$file";
 }
 
@@ -106,21 +107,21 @@ start_batch_job(){
 		execution_command=`echo $execution_command | sed "s/ARRAY_INTERVAL/1:$jobNr/g"`;
 	fi
 	#check other parameters
-		local ignore_array=("batch" "data");
-		for name in "${OPTION_ARRAY[@]}";
-		do
-			namevar=`echo $name | sed 's:-::g'`;
-			arrayContainsElement "$namevar" "${ignore_array[@]}";
-			containsIgnoreElement=$?;
-			if [ "$containsIgnoreElement" != 0 ];
-			then
-				#add variable to the execution command
-				echo "check $name";
-				replace=`echo $namevar | awk '{print toupper($0)}'`;
-				#if is a file, copy to the execution dir
-				to_add=`echo ${ENGINE_VALUE_ARRAY[$namevar]} | sed "s:$replace:${VALUE_ARRAY[$name]}:g"`;
-				execution_command=$execution_command" "$to_add;
-			fi
+	local ignore_array=("batch" "data");
+	for name in "${OPTION_ARRAY[@]}";
+	do
+		namevar=`echo $name | sed 's:-::g'`;
+		arrayContainsElement "$namevar" "${ignore_array[@]}";
+		containsIgnoreElement=$?;
+		if [ "$containsIgnoreElement" != 0 ];
+		then
+			#add variable to the execution command
+			echo "check $name";
+			replace=`echo $namevar | awk '{print toupper($0)}'`;
+			#if is a file, copy to the execution dir
+			to_add=`echo ${ENGINE_VALUE_ARRAY[$namevar]} | sed "s:$replace:${VALUE_ARRAY[$name]}:g"`;
+			execution_command=$execution_command" "$to_add;
+		fi
 	done
 	execution_command=$execution_command" "${VALUE_ARRAY["-batch"]};	
 }
@@ -178,5 +179,5 @@ else
 		fi
 	fi
 echo $execution_command;
-echo $execution_command | sh;
+#echo $execution_command | sh;
 fi

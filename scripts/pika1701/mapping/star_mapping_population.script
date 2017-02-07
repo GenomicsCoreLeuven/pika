@@ -45,7 +45,7 @@ THREADS="20";
 
 #the actual script
 JOBID="";
-GENOME_DIR="$GENOME_DIR/$version_STAR/genome"
+GENOME_DIR="$GENOME_DIR/$version_STAR"
 
 mkdir -p $SCRATCH_DIR/$JOBID;
 TMPDIR=$SCRATCH_DIR/$JOBID;

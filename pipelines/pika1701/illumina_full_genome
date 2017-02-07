@@ -31,3 +31,5 @@ ls -1 -d ../../raw/*.R1.fastq.gz | sed 's:../../raw/::g' | sed 's:.R1.fastq.gz::
 
 ##[JOB] gatk_smp
 
+##[JOB] vcf_merge_smp
+

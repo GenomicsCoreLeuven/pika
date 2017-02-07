@@ -171,7 +171,7 @@ copy_and_correct_script(){
 		return 1;
 	else
 		script=$1;
-		cat $script | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" | sed "s:SCRATCH_DIR=~;:SCRATCH_DIR=$MY_SCRATCH;:g" > $script.tmp;
+		cat $script | sed "s:MAIL:$MAIL:g" | sed "s:default_project:$BILLING:g" | sed "s:PROJECT_DIR=\"\":PROJECT_DIR=\"$PROJECT_DIR\":" | sed "s:GENOME_DIR=\"\":GENOME_DIR=\"$GENOMEDIR/\":" | sed "s:SCRATCH_DIR=~;:SCRATCH_DIR=\"$MY_SCRATCH\";:g" > $script.tmp;
 
 		mv $script.tmp $script;
 		#add possible extra sources

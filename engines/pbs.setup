@@ -6,4 +6,6 @@ job_array	-t 1-ARRAY_INTERVAL:1
 prolog	-l prologue=PROLOG
 epilog	-l epilogue=EPILOG
 chain	-W depend=afterok:JOBID
+afterok	-W depend=afterok:JOBID
+afterany	-W depend=afterany:JOBID
 MEMTYPE	LOWER
