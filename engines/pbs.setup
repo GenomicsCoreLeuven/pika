@@ -2,7 +2,7 @@ extention	pbs
 submission	qsub
 job_id	$PBS_JOBID
 job_array_index	$PBS_ARRAYID
-job_array	-t 1-ARRAY_INTERVAL:1
+job_array	-t 1-ARRAY_INTERVAL%10
 prolog	-l prologue=PROLOG
 epilog	-l epilogue=EPILOG
 chain	-W depend=afterok:JOBID
