@@ -1,0 +1,61 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	2:00:00:00
+##[RUN] MEMORY	120gb
+##[RUN] NODES	2
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	sga_preprocess
+##[RUN] ACCOUNT	default_project
+##[VERSION] pikaDEV 
+##[HELP] This is a worker script: it uses SAMPLE and THREADS parameters
+##[HELP] This tool do the sga preprocessing
+##[HELP] This script can be ran multithreaded (use the THREADS parameter)
+##[HELP] Runtime depends on the indexing step
+##
+##[HOWTO] #SGA preprocess
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
+##[HOWTO] #This uses worker
+##[HOWTO] module load worker
+##[HOWTO] #start the module:
+##[HOWTO] #for only using 1 thread per sample:
+##[HOWTO] wsub -batch sga_preprocess.pbs -data samples.txt
+##[HOWTO] #for using multiple threads (this case 20)
+##[HOWTO] wsub -batch sga_preprocess.pbs -data samples.txt -threaded 20
+#loading the modules
+#extra_modules
+module load SGA
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/trimmomatic";
+OUTPUT_DIR="$PROJECT_DIR/sga_preprocess";
+SCRATCH_DIR="$PROJECT_DIR/tmp";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/$SAMPLE.R?.fastq.gz .;
+gunzip *gz;
+
+FASTQ_FILES="";
+if [ -f $SAMPLE.R2.fastq ];
+then 
+	#paired end
+        FASTQ_FILES="-p 1 $TMP_DIR/$SAMPLE.R1.fastq $TMP_DIR/$SAMPLE.R2.fastq";
+else
+        #single read
+        FASTQ_FILES="-p 0 $TMP_DIR/$SAMPLE.R1.fastq";
+fi
+
+
+sga preprocess $FASTQ_FILES > $TMP_DIR/$SAMPLE.sga_readfile.fastq 2> $TMP_DIR/$SAMPLE.sga_preprocess.log; 
+rm $TMP_DIR/$SAMPLE.R?.fastq;
+sga index -a ropebwt --no-reverse -t $THREADS $TMP_DIR/$SAMPLE.sga_readfile.fastq > $TMP_DIR/$SAMPLE.sga_index.log;
+
+gzip $TMP_DIR/$SAMPLE*.fastq;
+mkdir -p $OUTPUT_DIR;
+rsync -ahrL $TMP_DIR/* $OUTPUT_DIR/;
+rm -rf $TMP_DIR;

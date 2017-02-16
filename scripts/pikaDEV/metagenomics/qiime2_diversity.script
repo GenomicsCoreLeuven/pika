@@ -1,0 +1,118 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	100gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	qiime2
+##[RUN] ACCOUNT	default_project
+##[VERSION] pikaDEV 
+##[HELP] This tool run the qiime2 pipeline
+##
+##[HOWTO] #metagenomics qiime2
+##[HOWTO] #start the module:
+##[HOWTO] qsub qiime2.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] blast_options: change the options of the mapper (standard: )
+##[OPTIONS] blast_options	optional	sed "s:BLAST_OPTIONS=\"\":BLAST_OPTIONS=\"value\":g"
+##[HELP] sample: the name of the sample
+##[OPTIONS] sample	mandatory	sed "s:SAMPLE=\"\":SAMPLE=\"value\":g"
+
+
+#loading the modules
+#extra_modules
+module load qiime2
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/qiime2";
+SCRATCH_DIR=~;
+THREADS="20";
+SAMPLE="";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/$SAMPLE* $TMP_DIR/;
+
+#import
+qiime tools import --type RawSequences --input-path raw-sequences --output-path raw-sequences.qza
+
+#demultiplex
+qiime demux emp --i-seqs raw-sequences.qza --m-barcodes-file sample-metadata.tsv --m-barcodes-category BarcodeSequence --o-per-sample-sequences demux
+
+#QC
+qiime dada2 plot-qualities --i-demultiplexed-seqs demux.qza --p-n 10 --o-visualization demux-qual-plots
+
+qiime dada2 denoise --i-demultiplexed-seqs demux.qza --p-trim-left 0 --p-trunc-len 100 --o-representative-sequences rep-seqs --o-table table
+
+qiime feature-table summarize --i-table table.qza --o-visualization table
+qiime feature-table tabulate-seqs --i-data rep-seqs.qza --o-visualization rep-seqs
+
+
+#Generate a tree for phylogenetic diversity analyses
+qiime alignment mafft --i-sequences rep-seqs.qza --o-alignment aligned-rep-seqs
+
+qiime alignment mask --i-alignment aligned-rep-seqs.qza --o-masked-alignment masked-aligned-rep-seqs
+
+qiime phylogeny fasttree --i-alignment masked-aligned-rep-seqs.qza --o-tree unrooted-tree
+
+qiime phylogeny midpoint-root --i-tree unrooted-tree.qza --o-rooted-tree rooted-tree
+
+#Alpha and beta diversity analysis
+qiime diversity core-metrics --i-phylogeny rooted-tree.qza --i-table table.qza --p-sampling-depth 1441 --output-dir cm1441
+
+qiime diversity alpha-group-significance --i-alpha-diversity cm1441/faith_pd_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm1441/faith-pd-group-significance
+
+qiime diversity alpha-group-significance --i-alpha-diversity cm1441/evenness_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm1441/evenness-group-significance
+
+qiime diversity alpha-correlation --i-alpha-diversity cm1441/faith_pd_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm1441/faith-pd-correlation
+
+qiime diversity alpha-correlation --i-alpha-diversity cm1441/evenness_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm1441/evenness-correlation
+
+qiime diversity beta-group-significance --i-distance-matrix cm1441/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --m-metadata-category BodySite --o-visualization cm1441/unweighted-unifrac-body-site-significance
+
+qiime diversity beta-group-significance --i-distance-matrix cm1441/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --m-metadata-category Subject --o-visualization cm1441/unweighted-unifrac-subject-group-significance
+
+qiime diversity bioenv --i-distance-matrix cm1441/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --o-visualization cm1441/unweighted-unifrac-bioenv
+
+qiime diversity bioenv --i-distance-matrix cm1441/bray_curtis_distance_matrix.qza --m-metadata-file sample-metadata.tsv --o-visualization cm1441/bray-curtis-bioenv
+
+qiime emperor plot --i-pcoa cm1441/unweighted_unifrac_pcoa_results.qza --m-metadata-file sample-metadata.tsv --p-custom-axis DaysSinceExperimentStart --o-visualization cm1441/unweighted-unifrac-emperor
+
+qiime emperor plot --i-pcoa cm1441/bray_curtis_pcoa_results.qza --m-metadata-file sample-metadata.tsv --p-custom-axis DaysSinceExperimentStart --o-visualization cm1441/bray-curtis-emperor
+
+#Taxonomic analysis
+
+qiime feature-classifier classify --i-classifier gg-13-8-99-515-806-nb-classifier.qza --i-reads rep-seqs.qza --o-classification taxonomy
+
+qiime taxa tabulate --i-data taxonomy.qza --o-visualization taxonomy
+
+qiime taxa barplot --i-table table.qza --i-taxonomy taxonomy.qza --m-metadata-file sample-metadata.tsv --o-visualization taxa-bar-plots
+
+#Differential abundance analysis
+
+qiime composition add-pseudocount --i-table table.qza --o-composition-table comp-table
+
+qiime composition ancom --i-table comp-table.qza --m-metadata-file sample-metadata.tsv --m-metadata-category BodySite --o-visualization ancom-BodySite
+
+qiime taxa collapse --i-table table.qza --i-taxonomy taxonomy.qza --p-level 2 --o-collapsed-table table-l2
+
+qiime composition add-pseudocount --i-table table-l2.qza --o-composition-table comp-table-l2
+
+qiime composition ancom --i-table comp-table-l2.qza --m-metadata-file sample-metadata.tsv --m-metadata-category BodySite --o-visualization l2-ancom-BodySite
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$SAMPLE* .;
+rm -rf $TMP_DIR;
+
+

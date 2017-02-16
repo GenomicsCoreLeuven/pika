@@ -1,0 +1,47 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	0:12:00:00
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	1
+##[RUN] MEMORY	120gb
+##[RUN] NAME	vcf_merge
+##[RUN] ACCOUNT	default_project
+##[VERSION] pikaDEV 
+##[HELP] This tool will merge multiple vcf files
+##[HELP] This script will use only one cpu
+##[HELP] This scripts runtime depends on the number of vcf files, the size of the files, the number of columns, ...
+##[HELP] The output file name will have to change
+##
+##[HOWTO] #VCF merge
+##[HOWTO] #change the output name of the vcf files
+##[HOWTO] #start the module:
+##[HOWTO] qsub vcf_merge.pbs
+##
+##[HELP] Options:
+##[HELP] freebayes_output_name: the name in the freebayes output
+##[OPTIONS] freebayes_output_name	optional	sed "s:OUTPUT_PART=\".m15.q15.useduplicates.ploidy2\":OUTPUT_PART=\"\":"
+
+#loading the modules
+#extra_modules
+module load vcflib
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+VCF_DIR="$PROJECT_DIR/snp_calling/parts";
+OUTPUT_DIR="$PROJECT_DIR/snp_calling";
+FREEBAYES_OUTPUT_NAME=".m15.q15.useduplicates.ploidy2";
+FREEBAYES_OUTPUT_FILE_NAME="freebayes"$FREEBAYES_OUTPUT_NAME".vcf";
+SCRATCH_DIR=~;
+
+#the actual script
+mkdir -p $SCRATCH_DIR;
+TMPDIR=$SCRATCH_DIR;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $VCF_DIR;
+cat *.vcf | vcffirstheader > $TMP_DIR/combined.tmp
+grep "^#" $TMP_DIR/combined.tmp > $TMP_DIR/sorted.tmp;
+grep -v "^#" $TMP_DIR/combined.tmp | sort -k1,1 -k2,2n >> $TMP_DIR/sorted.tmp;
+rm $TMP_DIR/combined.tmp;
+cat $TMP_DIR/sorted.tmp | vcfuniq > $OUTPUT_DIR/$FREEBAYES_OUTPUT_FILE_NAME;
+
+rm -rf $TMP_DIR;
+

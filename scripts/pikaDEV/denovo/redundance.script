@@ -1,0 +1,54 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	20:00:00:00
+##[RUN] MEMORY	240gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	10
+##[RUN] NAME	redundance
+##[RUN] ACCOUNT	default_project
+##[RUN] PARTITION	smp1
+##[VERSION] pikaDEV 
+##[HELP] This is a regular script
+##[HELP] This tool will reduce the number of contigs for high heterozygous genomes
+##[HELP] This script is multithreaded. 
+##[HELP] This script runs for multiple weeks
+##[HELP] This script needs to be edited before run
+##
+##[HOWTO] #redundance
+##[HOWTO] #The script needs to be edited before ran (edit the information about the scaffolds/contigs in SCAFFOLD_FILE)
+##[HOWTO] #start the module:
+##[HOWTO] qsub redundance.pbs
+#loading the modules
+#extra_modules
+module load redundance
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+KMER="31";
+SAMPLE_DIR="$PROJECT_DIR/abyss_$KMER";
+OUTPUT_DIR="$PROJECT_DIR/redundance_$KMER";
+SCRATCH_DIR=~;
+SCAFFOLD_FILE="$SAMPLE_DIR/scaffolds.fa";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync $SAMPLE_DIR/*.gz .;
+
+filelist="";
+for i in `ls -1 *R1*gz`;
+do
+        j=`echo $i | sed "s:.R1.:.R2.:g"`;
+        filelist=$filelist" "$i" "$j;
+done
+
+redundans --noreduction --noscaffolding -t $THREADS -v -i $filelist -f $SCAFFOLD_FILE -o $TMP_DIR/output;
+
+
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahrL $TMP_DIR/output/* .;
+rm -r $TMP_DIR;

@@ -1,0 +1,47 @@
+#!/bin/bash -l
+###[RUN] WALLTIME        12:00:00
+###[RUN] MEMORY  100gb
+###[RUN] NODES   1
+###[RUN] CORES_PER_NODE  20
+###[RUN] NAME    blast_database
+###[RUN] ACCOUNT default_project
+###[VERSION] pikaDEV
+###[HELP] This tool will create the needed database for blast
+###[HELP] This script has a long runtime (multiple houres)
+###
+###[HOWTO] #blast database creation
+###[HOWTO] #the genome directory in this script has to be changed
+###[HOWTO] #the fasta file needs to be named genome.fa
+###[HOWTO] #start the module:
+###[HOWTO] qsub blast_database.pbs
+#loading the modules
+#extra_modules
+module load BLAST;
+version_BLAST="BLAST";
+
+PROJECT_DIR="";
+GENOME_DIR="$PROJECT_DIR";
+THREADS=20;
+SCRATCH_DIR=~;
+#the actual script
+GENOME_NAME=`echo "$GENOME_DIR" | awk -v FS="/" '{print $(NF-1),$NF}'`
+
+#creating index
+cd $GENOME_DIR;
+mkdir -p $version_BLAST;
+cd $version_BLAST;
+rsync -ahrL $GENOME_DIR/genome.fa .;
+
+
+#convert2blastmask -in genome.fa -parse_seqids -masking_algorithm repeat -masking_options "repeatmasker, default" -outfmt maskinfo_asn1_bin -out genome.asnb
+#makeblastdb -in genome.fa -dbtype nucl -parse_seqids -mask_data genome.asnb -out genome_database -title "$GENOME_NAME"
+
+
+windowmasker -in genome.fa -infmt fasta -mk_counts -parse_seqids -out genome.counts -sformat obinary
+windowmasker -in genome.fa -infmt fasta -ustat genome.counts -outfmt maskinfo_asn1_bin -out genome.asnb
+makeblastdb -in genome.fa -dbtype nucl -mask_data genome.asnb -out genome_database -title "$GENOME_NAME"
+
+#check the database
+blastdbcmd -db genome_database -info
+
+

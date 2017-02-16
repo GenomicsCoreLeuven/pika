@@ -1,0 +1,63 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	100gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	blast
+##[RUN] ACCOUNT	default_project
+##[VERSION] pikaDEV 
+##[HELP] This tool will map reads using BLAST
+##[HELP] This script is multithreaded
+##
+##[HOWTO] #BLAST mapping
+##[HOWTO] #start the module:
+##[HOWTO] qsub blast.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] blast_options: change the options of the mapper (standard: )
+##[OPTIONS] blast_options	optional	sed "s:BLAST_OPTIONS=\"\":BLAST_OPTIONS=\"value\":g"
+##[HELP] sample: the name of the sample
+##[OPTIONS] sample	mandatory	sed "s:SAMPLE=\"\":SAMPLE=\"value\":g"
+
+
+#loading the modules
+#extra_modules
+module load BLAST
+module load elprep
+module load SAMtools
+version_BLAST="BLAST"
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/blast";
+SCRATCH_DIR=~;
+THREADS="20";
+SAMPLE="";
+BLAST_OPTIONS="";
+BLAST_OPTIONS="-evalue 0.00001 -perc_identity 80 -max_hsps 2 -outfmt 6 -db_hard_mask 30";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+BLAST_GENOME="$GENOME_DIR/$version_BLAST/genome_database";
+
+rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fasta $TMP_DIR/;
+
+
+blastn -query $SAMPLE.fasta -out $SAMPLE.blast.out -db $BLAST_GENOME $BLAST_OPTIONS -num_threads $THREADS;
+
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$SAMPLE* .;
+rm -rf $TMP_DIR;
+
+

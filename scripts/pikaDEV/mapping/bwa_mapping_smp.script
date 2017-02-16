@@ -1,0 +1,77 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	18:00:00
+##[RUN] MEMORY	3200gb
+##[RUN] NODES	14
+##[RUN] CORES_PER_NODE	10
+##[RUN] NAME	bwa_mapping
+##[RUN] ACCOUNT	default_project
+##[RUN] PARTITION       smp1
+##[VERSION] pikaDEV 
+##[HELP] This tool will map reads using BWA
+##[HELP] This script is multithreaded
+##[HELP] This script runs only a 2 minute per 1M reads
+##[HELP] This script needs to be edited: the sample, flash and genome directory has to be changed
+##
+##[HOWTO] #BWA mapping
+##[HOWTO] #edit in this script the sample, flash and genome directory
+##[HOWTO] #start the module:
+##[HOWTO] qsub bwa_mapping.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] bwa_options: change the options of the mapper (standard: )
+##[OPTIONS] bwa_options	optional	sed "s:BWA_OPTIONS=\"\":BWA_OPTIONS=\"value\":g"
+##[HELP] sample: the name of the sample
+##[OPTIONS] sample	mandatory	sed "s:SAMPLE=\"\":SAMPLE=\"value\":g"
+
+
+#loading the modules
+#extra_modules
+module load BWA
+module load elprep
+module load SAMtools
+version_BWA="BWA"
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/mapped";
+#this can be NO (for regular files), FLASH (for only flashed data) or BOTH (for both flashed and unflashed data)
+FLASH="NO";
+SCRATCH_DIR=~;
+THREADS="140";
+SAMPLE="";
+BWA_OPTIONS="";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+BWA_GENOME="$GENOME_DIR/$version_BWA/genome.fa";
+
+rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fastq.gz $TMP_DIR/;
+gunzip *gz;
+
+if [ -f $SAMPLE.R2.fastq ];
+then
+	#paired end mapping
+	FASTQ_FILES="$TMP_DIR/$SAMPLE.R1.fastq $TMP_DIR/$SAMPLE.R2.fastq";
+else
+	#single read mapping
+	FASTQ_FILES="$TMP_DIR/$SAMPLE.R1.fastq";
+fi
+
+bwa mem -t $THREADS -M -R "@RG\tID:$SAMPLE\tSM:$SAMPLE\tPL:illumina\tLB:$SAMPLE\tPU:$SAMPLE" $BWA_OPTIONS $BWA_GENOME $FASTQ_FILES | elprep /dev/stdin $SAMPLE".bam" --mark-duplicates --sorting-order coordinate --nr-of-threads $THREADS;
+samtools index -b $SAMPLE.bam;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$SAMPLE* .;
+rm -rf $TMP_DIR;
+
+

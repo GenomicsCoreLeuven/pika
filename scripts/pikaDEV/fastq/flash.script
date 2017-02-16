@@ -1,0 +1,68 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	6:00:00
+##[RUN] MEMORY	30gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	flash
+##[RUN] ACCOUNT	default_project
+##[VERSION] pikaDEV
+##[HELP] This is a worker script: it uses SAMPLE parameters
+##[HELP] This tool will merge overlapping reads to 1 (ends with 3 files: R1, R2 of non overlapping, and overlapped reads)
+##[HELP] This script will use only one cpu per sample
+##[HELP] This scripts runtime is limited (less then some houres) 
+##
+##[HOWTO] #FLASH
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
+##[HOWTO] #This uses worker
+##[HOWTO] module load worker
+##[HOWTO] #start the module:
+##[HOWTO] wsub -batch flash.pbs -data samples.txt
+
+##[HELP] Options:
+##[HELP] use_trimmomatic: yes if the result needed to use is a trimmomatic result
+##[OPTIONS] use_trimmomatic	optional	sed 's:IS_TRIMMOMATIC=\"no\":IS_TRIMMOMATIC=\"value\":g'
+
+#loading the modules
+#extra_modules
+module load FLASH
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/flash";
+SCRATCH_DIR=~;
+IS_TRIMMOMATIC="no";
+
+#batchline
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahr $SAMPLE_DIR/$SAMPLE* .;
+
+flash -z -d $TMP_DIR -o $SAMPLE $TMP_DIR/$SAMPLE.R1.fastq.gz $TMP_DIR/$SAMPLE.R2.fastq.gz > $TMP_DIR/$SAMPLE.flash.log 2> $TMP_DIR/$SAMPLE.flash.log;
+
+if [ "$IS_TRIMMOMATIC" == "yes" ];
+then
+	zcat $SAMPLE.extendedFrags.fastq.gz > $SAMPLE.tmp.fastq;
+	zcat $SAMPLE.unpaired.forward.fastq.gz >> $SAMPLE.tmp.fastq;
+	zcat $SAMPLE.unpaired.reverse.fastq.gz >> $SAMPLE.tmp.fastq;
+	rm $SAMPLE.extendedFrags.fastq.gz;
+	mv $SAMPLE.tmp.fastq $SAMPLE.extendedFrags.fastq;
+	gzip $SAMPLE.extendedFrags.fastq;
+	rm $SAMPLE.unpaired*;
+fi
+
+rm $SAMPLE.R?.fastq.gz;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/* .;
+
+rm -rf $TMP_DIR;
+
+
