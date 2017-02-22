@@ -162,7 +162,7 @@ else
 	fi
 
     case "$1" in
-        help)
+        help | -h | --help | -help)
             show_help;
         ;;
 	show | list)

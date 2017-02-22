@@ -1,0 +1,4 @@
+chain	Wait for this job(s) to end (finish) (value is a jobid, if multiple a comma seperated list)
+afterok	Wait for this job(s) to finish correctly (value is a jobid, if multiple a comma seperated list)
+afterany	Wait for this job(s) to end (not necessary finish correctly) (value is a jobid, if multiple a comma seperated list)
+
