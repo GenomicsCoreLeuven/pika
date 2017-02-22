@@ -17,7 +17,7 @@
 ##[HOWTO] #The script need to be edited: change the flash parameter
 ##[HOWTO] #The genome directory in the prolog file will need to be changed
 ##[HOWTO] #start the module:
-##[HOWTO] qsub bwa_mapping_population.pbs
+##[HOWTO] pikasub bwa_mapping_population.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

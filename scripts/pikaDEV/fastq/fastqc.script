@@ -12,7 +12,7 @@
 ##
 ##[HOWTO] #FASTQC
 ##[HOWTO] #start the module:
-##[HOWTO] qsub fastqc.pbs
+##[HOWTO] pikasub fastqc.pbs
 #loading the modules
 #extra_modules
 module load FastQC

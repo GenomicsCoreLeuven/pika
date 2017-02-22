@@ -17,7 +17,7 @@
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #edit the flash parameter in the pbs, and the genome directory in the prolog
 ##[HOWTO] #start the module:
-##[HOWTO] qsub bowtie_mapping_population.pbs
+##[HOWTO] pikasub bowtie_mapping_population.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

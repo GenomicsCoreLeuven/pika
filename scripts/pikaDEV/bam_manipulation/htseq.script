@@ -14,7 +14,7 @@
 ##[HOWTO] #HTSEQ-count
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #start the module:
-##[HOWTO] qsub htseq.pbs
+##[HOWTO] pikasub htseq.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

@@ -13,7 +13,7 @@
 ###[HOWTO] #the genome directory in this script has to be changed
 ###[HOWTO] #the fasta file needs to be named genome.fa
 ###[HOWTO] #start the module:
-###[HOWTO] qsub blast_database.pbs
+###[HOWTO] pikasub blast_database.pbs
 #loading the modules
 #extra_modules
 module load BLAST;

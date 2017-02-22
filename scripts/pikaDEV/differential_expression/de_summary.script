@@ -13,7 +13,7 @@
 ##[HOWTO] #Create a data file (conditions.txt), with a CONDITION1, CONDITION2 and a TYPE column
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
 ##[HOWTO] #start the module:
-##[HOWTO] qsub de_summary.pbs conditions.txt 
+##[HOWTO] pikasub de_summary.pbs conditions.txt 
 #loading the modules
 #extra_modules
 

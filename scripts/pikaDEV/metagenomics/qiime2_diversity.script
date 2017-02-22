@@ -10,7 +10,7 @@
 ##
 ##[HOWTO] #metagenomics qiime2
 ##[HOWTO] #start the module:
-##[HOWTO] qsub qiime2.pbs
+##[HOWTO] pikasub qiime2.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

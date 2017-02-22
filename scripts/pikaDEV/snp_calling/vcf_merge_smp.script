@@ -14,7 +14,7 @@
 ##[HOWTO] #VCF merge
 ##[HOWTO] #change the output name of the vcf files
 ##[HOWTO] #start the module:
-##[HOWTO] qsub vcf_merge.pbs
+##[HOWTO] pikasub vcf_merge.pbs
 ##
 ##[HELP] Options:
 ##[HELP] freebayes_output_name: the name in the freebayes output

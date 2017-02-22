@@ -14,7 +14,7 @@
 ##[HOWTO] #the genome directory in the script has to be changed
 ##[HOWTO] #the fasta file has to be named genome.fa
 ##[HOWTO] #start the module:
-##[HOWTO] qsub gatk_index.pbs
+##[HOWTO] pikasub gatk_index.pbs
 #loading the modules
 #extra_modules
 module load GATK

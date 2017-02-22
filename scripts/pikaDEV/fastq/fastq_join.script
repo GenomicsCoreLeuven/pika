@@ -14,7 +14,7 @@
 ##[HOWTO] #FASTQ_JOIN
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #start the module:
-##[HOWTO] qsub fastq_join.pbs
+##[HOWTO] pikasub fastq_join.pbs
 #loading the modules
 #extra_modules
 

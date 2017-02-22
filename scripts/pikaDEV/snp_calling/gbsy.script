@@ -10,7 +10,7 @@
 ##
 ##[HOWTO] #GBSY
 ##[HOWTO] #start the module:
-##[HOWTO] qsub gbsy.pbs 
+##[HOWTO] pikasub gbsy.pbs 
 #loading the modules
 #extra_modules
 module load gbsy/v0.0alpha-Java1.8.0_77

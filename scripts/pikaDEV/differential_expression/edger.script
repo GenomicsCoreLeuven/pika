@@ -23,7 +23,7 @@
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
 ##[HOWTO] #The edgeR module must be installed in your local R directory (see HELP for more info)
 ##[HOWTO] #start the module:
-##[HOWTO] qsub edger.pbs 
+##[HOWTO] pikasub edger.pbs 
 
 ##[HELP] Options:
 ##[HELP] sample_condition: the full path to the sample conditions file

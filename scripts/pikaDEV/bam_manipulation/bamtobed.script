@@ -14,7 +14,7 @@
 ##[HOWTO] #BAMTOBED
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column (with header)
 ##[HOWTO] #start the module (if samples.txt is in the job dir):
-##[HOWTO] qsub bamtobed.pbs
+##[HOWTO] pikasub bamtobed.pbs
 #loading the modules
 #extra_modules
 module load BEDTools

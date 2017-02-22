@@ -14,7 +14,7 @@
 ##[HOWTO] #BWA mapping
 ##[HOWTO] #edit in this script the sample, flash and genome directory
 ##[HOWTO] #start the module:
-##[HOWTO] qsub bwa_mapping.pbs
+##[HOWTO] pikasub bwa_mapping.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

@@ -24,7 +24,7 @@
 ##[HOWTO] #Create a sample_condition.csv file in the OUTPUT_DIR. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
 ##[HOWTO] #The DESeq module must be installed in your local R directory (see HELP for more info)
 ##[HOWTO] #start the module:
-##[HOWTO] qsub deseq.pbs  
+##[HOWTO] pikasub deseq.pbs  
 ##[HELP] Options:
 ##[HELP] sample_condition: the full path to the sample conditions file
 ##[OPTIONS] sample_condition	optional	sed 's:SAMPLE_CONDITIONS=\"\$PROJECT_DIR/jobs/sample_condition.csv\":SAMPLE_CONDITIONS=\"value\":g'

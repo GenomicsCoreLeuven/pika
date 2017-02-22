@@ -14,7 +14,7 @@
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
 ##[HOWTO] #start the module:
 ##[HOWTO] #for only using 1 thread per sample:
-##[HOWTO] qsub sga_preprocess.pbs
+##[HOWTO] pikasub sga_preprocess.pbs
 #loading the modules
 #extra_modules
 module load SGA

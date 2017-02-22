@@ -14,7 +14,7 @@
 ##[HOWTO] #CANU
 ##[HOWTO] #The parameters in this script has to be edited before ran
 ##[HOWTO] #start the module:
-##[HOWTO] qsub canu.pbs
+##[HOWTO] pikasub canu.pbs
 #loading the modules
 #extra_modules
 module load canu

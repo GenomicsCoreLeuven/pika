@@ -18,7 +18,7 @@
 ##[HOWTO] #The barcodes.tsv is a tabdelimited file, with (no header) sample, barcode, enzyme
 ##[HOWTO] #Change the number of nodes to the number of runs you want to demultiplex at once + 1
 ##[HOWTO] #start the module:
-##[HOWTO] qsub gbsx.pbs
+##[HOWTO] pikasub gbsx.pbs
 #loading the modules
 #extra_modules
 module load gbsx

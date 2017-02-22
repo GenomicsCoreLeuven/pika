@@ -12,7 +12,7 @@
 ##[HOWTO] #VarScan2
 ##[HOWTO] #This script calls variants using VarScan2
 ##[HOWTO] #The command needed to execute is:
-##[HOWTO] qsub varscan.pbs
+##[HOWTO] pikasub varscan.pbs
 ##[HOWTO] #Ideal is to test different parameters for the mpileup and varscan.
 ##
 ##[HELP] Options:

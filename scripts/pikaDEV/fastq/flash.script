@@ -14,7 +14,7 @@
 ##[HOWTO] #FLASH
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #start the module:
-##[HOWTO] qsub flash.pbs
+##[HOWTO] pikasub flash.pbs
 
 ##[HELP] Options:
 ##[HELP] use_trimmomatic: yes if the result needed to use is a trimmomatic result

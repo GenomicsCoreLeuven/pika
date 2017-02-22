@@ -14,7 +14,7 @@
 ##[HOWTO] #SGA preqc
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #start the module:
-##[HOWTO] qsub sga_preqc.pbs 
+##[HOWTO] pikasub sga_preqc.pbs 
 #
 ##Options
 ##[HELP] Options:

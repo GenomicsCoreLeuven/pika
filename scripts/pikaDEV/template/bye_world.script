@@ -13,8 +13,8 @@
 ##
 ##[HOWTO] #Here follows the howto. The comment lines should start with #, as the executable lines should start without (like in a bash or sh script).
 ##[HOWTO] #Usually there are comments like which module should be loaded before, which data file the script needs, ...
-##[HOWTO] #The qsub command is:
-##[HOWTO] qsub bye_world.pbs
+##[HOWTO] #The pikasub command is:
+##[HOWTO] pikasub bye_world.pbs
 ##[HOWTO] #Note that the executable line does not start with #, also in the pipelines and in the tool the ##[HOWTO] will be trimmed.
 
 #loading the modules

@@ -16,7 +16,7 @@
 ##[HOWTO] #Create a data file (regions.txt), with a REGION column, region is chr:begin-end
 ##[HOWTO] #start the module: (in case all regions can not be ran in 1 run,
 ##[HOWTO] #split the regions file in multiple files)
-##[HOWTO] qsub freebayes_regions.pbs
+##[HOWTO] pikasub freebayes_regions.pbs
 ##[HOWTO] #merging happens now in this script
 ##
 ##[HELP] Options:

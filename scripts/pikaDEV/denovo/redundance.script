@@ -16,7 +16,7 @@
 ##[HOWTO] #redundance
 ##[HOWTO] #The script needs to be edited before ran (edit the information about the scaffolds/contigs in SCAFFOLD_FILE)
 ##[HOWTO] #start the module:
-##[HOWTO] qsub redundance.pbs
+##[HOWTO] pikasub redundance.pbs
 #loading the modules
 #extra_modules
 module load redundance

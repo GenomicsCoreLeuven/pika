@@ -17,7 +17,7 @@
 ##[HOWTO] #The script need to be edited: change the flash parameter
 ##[HOWTO] #The genome directory in the prolog file will need to be changed
 ##[HOWTO] #When the THREADS variable in this script is changed, this can be ran as multithreaded population mapping, start like this (replace 20 with the number of given threads) (standard multithreaded):
-##[HOWTO] qsub star_mapping_population.pbs
+##[HOWTO] pikasub star_mapping_population.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

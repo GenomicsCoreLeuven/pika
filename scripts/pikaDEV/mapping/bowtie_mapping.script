@@ -14,7 +14,7 @@
 ##[HOWTO] #Bowtie
 ##[HOWTO] #The sample, flash and genome directory needs to be changed
 ##[HOWTO] #start the module:
-##[HOWTO] qsub bowtie_mapping.pbs
+##[HOWTO] pikasub bowtie_mapping.pbs
 
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

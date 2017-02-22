@@ -11,7 +11,7 @@
 ##
 ##[HOWTO] #BLAST mapping
 ##[HOWTO] #start the module:
-##[HOWTO] qsub blast.pbs
+##[HOWTO] pikasub blast.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

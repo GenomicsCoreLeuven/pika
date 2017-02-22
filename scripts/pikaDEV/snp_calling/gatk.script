@@ -9,7 +9,7 @@
 ##[HOWTO] #GATK variant calling
 ##[HOWTO] #edit in this script the sample and genome directory
 ##[HOWTO] #start the module:
-##[HOWTO] qsub gatk.pbs
+##[HOWTO] pikasub gatk.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)

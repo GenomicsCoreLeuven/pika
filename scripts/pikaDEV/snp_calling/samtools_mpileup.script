@@ -12,7 +12,7 @@
 ##[HOWTO] #Samtools mpileup
 ##[HOWTO] #This script prepares variant calling using samtools mpileup
 ##[HOWTO] #The command needed to execute is:
-##[HOWTO] qsub samtools_mpileup.pbs
+##[HOWTO] pikasub samtools_mpileup.pbs
 ##[HOWTO] #Ideal is to test different parameters for the mpileup.
 ##
 ##[HELP] Options:

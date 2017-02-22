@@ -14,7 +14,7 @@
 ##[HOWTO] #trimmomatic
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
 ##[HOWTO] #start the module:
-##[HOWTO] qsub trimmomatic.pbs
+##[HOWTO] pikasub trimmomatic.pbs
 
 ##[HELP] Options:
 ##[HELP] genome: the genome used for the other steps in a pipeline (your adapters should be in ../../adapters/trimmomatic/TruSeq3-PE.fa for regular adapters, or in ../../adapters/rna_polyA/adapter_polyA.fa for 3 prime rna seq (like quantseq))
