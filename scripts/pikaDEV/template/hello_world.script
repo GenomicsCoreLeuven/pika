@@ -11,8 +11,8 @@
 ##[HELP] If you use this as a templete, do not forget to change the RUN parameters above. 
 ##
 ##[HOWTO] #Here follows the howto. The comment lines should start with #, as the executable lines should start without (like in a bash or sh script).
-##[HOWTO] #Usually there are comments like which module should be loaded before (worker module and version), which data file the worker needs, ...
-##[HOWTO] #If no worker script is needed, like here only the qsub command is needed:
+##[HOWTO] #Usually there are comments like which module should be loaded before, which data file the script needs, ...
+##[HOWTO] #The qsub command:
 ##[HOWTO] qsub hello_world.pbs
 ##[HOWTO] #Note that the executable line does not start with #, also in the pipelines and in the tool the ##[HOWTO] will be trimmed.
 ##

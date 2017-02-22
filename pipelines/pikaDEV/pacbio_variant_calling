@@ -44,3 +44,5 @@ for i in `ls -1 *R1.fastq.gz`; do j=`echo $i | sed "s:.gz::g"`; zcat $i | awk -v
 
 ##[JOB] varscan
 
+##[JOB] freebayes_pacbio_amplicons
+

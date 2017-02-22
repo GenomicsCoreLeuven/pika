@@ -1,6 +1,7 @@
 extention	slurm
 submission	sbatch
 job_id	$SLURM_JOBID
+node_file	$SLURM_JOB_NODELIST
 job_array_index	$SLURM_ARRAY_TASK_ID
 job_array	--array=1-ARRAY_INTERVAL
 chain	-d afterok:JOBID

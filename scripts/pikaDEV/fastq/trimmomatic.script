@@ -6,17 +6,15 @@
 ##[RUN] NAME	trimmomatic
 ##[RUN] ACCOUNT	default_project
 ##[VERSION] pikaDEV
-##[HELP] This is a worker script: it uses SAMPLE and THREADS parameters
+##[HELP] This is a batch script: it uses SAMPLE parameters
 ##[HELP] This tool will trim adaptors from the reads in normal mode, or poly in rna mode (for quantseq)
 ##[HELP] This script can run multithreaded
 ##[HELP] This scripts runtime is limited
 ##
 ##[HOWTO] #trimmomatic
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE and a THREADS column
-##[HOWTO] #This uses worker
-##[HOWTO] module load worker
 ##[HOWTO] #start the module:
-##[HOWTO] wsub -batch trimmomatic.pbs -data samples.txt -threaded 20
+##[HOWTO] qsub trimmomatic.pbs
 
 ##[HELP] Options:
 ##[HELP] genome: the genome used for the other steps in a pipeline (your adapters should be in ../../adapters/trimmomatic/TruSeq3-PE.fa for regular adapters, or in ../../adapters/rna_polyA/adapter_polyA.fa for 3 prime rna seq (like quantseq))
@@ -29,6 +27,7 @@
 #loading the modules
 #extra_modules
 module load trimmomatic;
+module load parallel
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
@@ -37,9 +36,16 @@ OUTPUT_DIR="$PROJECT_DIR/trimmomatic";
 SCRATCH_DIR=~;
 IS_RNA="no";
 GENOME_DIR="";
-THREADS=1;
 
-#batchline
+NODEFILE="";
+if [ -z "$BATCH_FILE" ];
+then
+        #variable is empty or unset
+        SAMPLE_FILE="$PROJECT_DIR/jobs/samples.txt";
+else
+        SAMPLE_FILE=$BATCH_FILE
+fi
+
 
 if [ "$IS_RNA" == "no" ];
 then
@@ -86,5 +92,59 @@ cd $OUTPUT_DIR;
 rsync -ahr $TMP_DIR/* .;
 
 rm -r $TMP_DIR;
+
+
+#setting parallel environment
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY";
+#end setting parallel environment
+PARALLEL_JOBS=1;
+cat $NODEFILE | sort | uniq > nodefile
+
+for SAMPLE in `tail -n +2 $SAMPLE_FILE`;
+do
+        echo "
+		cd $TMP_DIR
+        	mkdir $SAMPLE
+       		cd $SAMPLE
+
+		rsync -ahr $SAMPLE_DIR/$SAMPLE* .;
+		rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+		if [ -f $SAMPLE.R2.fastq ];
+		then
+        		#paired end
+        		MODE=\"PE\";
+        		FASTQ_FILES=\"$TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz $TMP_DIR/$SAMPLE/$SAMPLE.R2.fastq.gz\";
+		        OUTPUT=\"$TMP_DIR/$SAMPLE/$SAMPLE.paired.R1.fastq.gz $TMP_DIR/$SAMPLE/$SAMPLE.unpaired.forward.R1.fastq.gz $TMP_DIR/$SAMPLE/$SAMPLE.paired.R2.fastq.gz $TMP_DIR/$SAMPLE/$SAMPLE.unpaired.reverse.R1.fastq.gz\";
+		else
+        		#single read
+        		MODE=\"SE\";
+  		        FASTQ_FILES=\"$TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq.gz\";
+        		OUTPUT=\"$TMP_DIR/$SAMPLE/$SAMPLE.paired.R1.fastq.gz\";
+		fi
+		
+		THREADS=\`nproc\`;
+		trimmomatic \$MODE -threads \$THREADS -phred33 \$FASTQ_FILES \$OUTPUT $ILLUMINACLIP > $TMP_DIR/$SAMPLE/$SAMPLE.log 2> $TMP_DIR/$SAMPLE/$SAMPLE.log;
+		rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+		rm $SAMPLE.R?.fastq.gz;
+		mv $SAMPLE.paired.R1.fastq.gz $SAMPLE.R1.fastq.gz;
+		if [ -f $SAMPLE.paired.R2.fastq.gz ];
+		then
+        		mv $SAMPLE.paired.R2.fastq.gz $SAMPLE.R2.fastq.gz;
+		fi
+
+		mkdir -p $OUTPUT_DIR;
+		rsync -ahr * $OUTPUT_DIR;
+		rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+		rm -r $TMP_DIR/$SAMPLE;
+
+	" >> $TMP_DIR/$SAMPLE.sh;
+        echo "$TMP_DIR/$SAMPLE.sh" >> commands.txt
+done
+
+cat commands.txt | parallel --sshloginfile nodefile -j "$PARALLEL_JOBS" 'sh {} > {}.log 2> {}.err'
+
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 
 

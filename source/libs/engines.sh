@@ -71,7 +71,8 @@ script_to_engine(){
 		mv $script.header.tmp $script.header;
 	done
 	jobid="${ENGINE_VALUE_ARRAY["job_id"]}";
-	grep -v "##\[RUN\]" $script | grep -v "#!/bin/bash" | sed "s:JOBID=\"\";:JOBID=$jobid;:" >> $script.header;
+	nodefile="${ENGINE_VALUE_ARRAY["node_file"]}"
+	grep -v "##\[RUN\]" $script | grep -v "#!/bin/bash" | sed "s:JOBID=\"\";:JOBID=$jobid;:" | sed "s:NODEFILE=\"\":NODEFILE=$nodefile:" >> $script.header;
 	mv $script.header $script;
 }
 

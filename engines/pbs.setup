@@ -1,6 +1,7 @@
 extention	pbs
 submission	qsub
 job_id	$PBS_JOBID
+node_file	$PBS_NODEFILE
 job_array_index	$PBS_ARRAYID
 job_array	-t 1-ARRAY_INTERVAL%10
 prolog	-l prologue=PROLOG
