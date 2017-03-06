@@ -1,9 +1,9 @@
 #!/bin/bash -l
-##[RUN] WALLTIME	12:00:00
-##[RUN] MEMORY	50gb
-##[RUN] NODES	1
+##[RUN] WALLTIME	24:00:00
+##[RUN] MEMORY	122gb
+##[RUN] NODES	4
 ##[RUN] CORES_PER_NODE	20
-##[RUN] NAME	htseq
+##[RUN] NAME	qualimap
 ##[RUN] ACCOUNT	default_project
 ##[VERSION] pikaDEV 
 ##[HELP] This is a batch script: it uses SAMPLE parameters
@@ -11,35 +11,24 @@
 ##[HELP] This script will use only one cpu
 ##[HELP] This script runs only a 1 minute per 1M reads
 ##
-##[HOWTO] #HTSEQ-count
+##[HOWTO] #Qualimap
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
 ##[HOWTO] #start the module:
-##[HOWTO] pikasub htseq.pbs
+##[HOWTO] pikasub qualimap.pbs
 ##
 ##[HELP] Options:
-##[HELP] genome: the genome to use (abriviation if known or full path)
-##[OPTIONS] genome	mandatory	sed "s:GENOME_DIR=\"\":GENOME_DIR=\"value\":g"
-##[HELP] ensembl: version of the ensembl to use (standard current link)
-##[OPTIONS] ensembl	mandatory	sed "s:ENSEMBL=\"current\":ENSEMBL=\"value\":g"
-##[HELP] strict: yes for the strict counting, no for flexible counting
-##[OPTIONS] strict	optional	sed "s:STRICT=\"yes\":STRICT=\"value\":g"
 
 #loading the modules
 #extra_modules
-module load SAMtools;
-module load HTSeq;
+module load qualimap
 module load parallel
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
-GENOME_DIR="";
 ENSEMBL="current";
 SAMPLE_DIR="$PROJECT_DIR/mapped";
-OUTPUT_DIR="$PROJECT_DIR/htseq";
+OUTPUT_DIR="$PROJECT_DIR/qualimap";
 SCRATCH_DIR=~;
-GENES_ANNOTATION_FILE="$GENOME_DIR/Ensembl/$ENSEMBL/genes.gff3";
-#strict (yes), flexible (no)
-STRICT="yes";
 
 NODEFILE="";
 if [ -z "$BATCH_FILE" ];
@@ -57,15 +46,6 @@ TMPDIR=$SCRATCH_DIR/$JOBID;
 TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
-if [ "$STRICT" == "yes" ];
-then
-	HTSEQ_PARAM="-s yes -a 10 -i Name -t gene -m union";
-	OUTPUT_FILE_NAME="htseq_a10_genes_strand_union.counts";
-else
-	HTSEQ_PARAM="-s no -a 0 -i Name -t gene -m intersection-nonempty";
-	OUTPUT_FILE_NAME="htseq_a0_genes_nostrand_intersectionNonempty.counts";
-fi
-
 cd $TMP_DIR;
 
 mkdir -p $OUTPUT_DIR;
@@ -73,7 +53,6 @@ mkdir -p $OUTPUT_DIR;
 #setting parallel environment
 export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY";
 #end setting parallel environment
-PARALLEL_JOBS=`nproc`;
 cat $NODEFILE | sort | uniq > nodefile
 
 for SAMPLE in `tail -n +2 $SAMPLE_FILE`;
@@ -86,18 +65,13 @@ do
 		#check if copy success, else exit
 		rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
 		
-		#bam to sam
-		samtools view $SAMPLE.bam > $SAMPLE.sam
+		#run qualimap
+		qualimap bamqc -bam $SAMPLE.bam -outdir $SAMPLE\"_qualimap\" --java-mem-size=120G
 		#check if success, else exit
 		rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
 		
-		#counting
-		htseq-count $HTSEQ_PARAM $SAMPLE.sam $GENES_ANNOTATION_FILE > $SAMPLE.$OUTPUT_FILE_NAME
-		#check if success, else exit
-        	rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
-
 		rm $SAMPLE.bam;
-		rsync -ahr $SAMPLE.* $OUTPUT_DIR/
+		rsync -ahr $SAMPLE* $OUTPUT_DIR/
 		#check if success, else exit
 		rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
 		cd ..; rm -r $SAMPLE
@@ -105,10 +79,8 @@ do
         echo "$TMP_DIR/$SAMPLE.sh" >> commands.txt
 done
 
-cat commands.txt | parallel --sshloginfile nodefile -j "$PARALLEL_JOBS" 'sh {} > {}.log 2> {}.err'
+cat commands.txt | parallel --sshloginfile nodefile -j 1 'sh {} > {}.log 2> {}.err'
 
 rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-
-
 
 

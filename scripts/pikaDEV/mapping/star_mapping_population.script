@@ -57,8 +57,6 @@ TMPDIR=$SCRATCH_DIR/$JOBID;
 TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
 cd $TMP_DIR;
 
-GENOME_DIR="$GENOME_DIR/$version_STAR"
-
 mkdir -p $OUTPUT_DIR;
 
 #setting parallel environment

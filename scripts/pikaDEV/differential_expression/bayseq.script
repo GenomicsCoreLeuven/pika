@@ -43,7 +43,6 @@ PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/htseq";
 OUTPUT_DIR="$PROJECT_DIR/bayseq";
 SCRATCH_DIR=~;
-SCRATCH_DIR="$SCRATCH_DIR/$PBS_JOBID";
 R_SCRIPT_DIR="$PROJECT_DIR/jobs";
 SAMPLE_CONDITIONS="$PROJECT_DIR/jobs/sample_condition.csv";
 
@@ -73,12 +72,15 @@ cat $NODEFILE | sort | uniq > nodefile
 
 for conditions in `tail -n +2 $CONDITION_FILE`;
 do
-        echo $conditions | awk -v FS="," '{print CONDITION1=$1; print CONDITION2=$2; print TYPE=$3}' | sh
+        CONDITION1=`echo $conditions | awk -v FS="," '{print $1}'`
+        CONDITION2=`echo $conditions | awk -v FS="," '{print $2}'`
+        TYPE=`echo $conditions | awk -v FS="," '{print $3}'`
         COMP_NAME=$CONDITION1"_vs_"$CONDITION2"_"$TYPE;
         mkdir -p $TMP_DIR/$COMP_NAME;
         cd $TMP_DIR/$COMP_NAME;
         rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
         awk -v FS="," -v OFS="," -v type="$TYPE" '{if(NR==1){print "sampleName,fileName,condition"}else{if(type=="strict"){file=".htseq_a10_genes_strand_union.counts"}else{file=".htseq_a0_genes_nostrand_intersectionNonempty.counts"} print $1,$1""file,$2;}}' sample_condition.csv | grep "sampleName\|,$CONDITION1\|,$CONDITION2" > samples.csv;
+	cd $TMP_DIR
         echo "
 		cd $TMP_DIR/$COMP_NAME
 		rsync -ahr $SAMPLE_DIR/* .

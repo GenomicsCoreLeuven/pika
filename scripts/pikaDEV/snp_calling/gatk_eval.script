@@ -1,0 +1,52 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	20gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	gatk_eval
+##[RUN] ACCOUNT	default_project
+##[VERSION] pikaDEV
+##[HOWTO] #GATK variant evaluation
+##[HOWTO] #edit in this script the sample and genome directory
+##[HOWTO] #start the module:
+##[HOWTO] pikasub gatk_eval.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+#extra_modules
+module load GATK
+module load picard
+version_GATK="GATK"
+
+PROJECT_DIR="";
+GENOME_DIR="";
+INPUT_DIR="$PROJECT_DIR/snp_calling";
+OUTPUT_DIR="$PROJECT_DIR/snp_eval"
+SCRATCH_DIR=~;
+THREADS=20;
+
+
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $INPUT_DIR/*.vcf .
+
+EVAL_SAMPLES="";
+for i in `ls -1 *vcf`;
+do
+	SAMPLE=`echo $i | sed 's:.vcf::g'`;
+	picard SortVcf I=$SAMPLE.vcf O=$SAMPLE.sorted.vcf SEQUENCE_DICTIONARY=$GENOME_DIR/$version_GATK/genome.dict 
+	mv $SAMPLE.sorted.vcf $SAMPLE.vcf;
+	EVAL_SAMPLES="$EVAL_SAMPLES --eval:$SAMPLE $SAMPLE.vcf"
+done
+
+java -jar $EBROOTGATK/GenomeAnalysisTK.jar -T VariantEval -R $GENOME_DIR/$version_GATK/genome.fa -o all.eval.grp $EVAL_SAMPLES;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/*.eval.grp .;
+rm -rf $TMP_DIR;

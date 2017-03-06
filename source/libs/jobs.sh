@@ -141,7 +141,7 @@ copy_job(){
 		if [ "$correct_job" == 0 ] && [ "$correct_species" == 0 ];
 		then
 			#copy the job
-			cp $BASEDIR/../scripts/$MODULE_VERSION/*/$1* $JOBDIR;
+			cp $BASEDIR/../scripts/$MODULE_VERSION/*/$1"."* $JOBDIR;
 			if [ -f $JOBDIR/$1.script ];
 			then
 				mv $JOBDIR/$1.script $JOBDIR/$prefix$1.$extention;

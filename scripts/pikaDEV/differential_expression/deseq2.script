@@ -41,7 +41,6 @@ PROJECT_DIR="";
 SAMPLE_DIR="$PROJECT_DIR/htseq";
 OUTPUT_DIR="$PROJECT_DIR/deseq2";
 SCRATCH_DIR=~;
-SCRATCH_DIR="$SCRATCH_DIR/$PBS_JOBID";
 R_SCRIPT_DIR="$PROJECT_DIR/jobs";
 SAMPLE_CONDITIONS="$PROJECT_DIR/jobs/sample_condition.csv";
 
@@ -70,20 +69,47 @@ export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULE
 PARALLEL_JOBS=`nproc`;
 cat $NODEFILE | sort | uniq > nodefile
 
+mkdir -p $TMP_DIR/global
+cd $TMP_DIR/global
+rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv
+TYPE="strict"
+awk -v FS="," -v OFS="," -v type="$TYPE" '{if(NR==1){print "sampleName,fileName,condition"}else{if(type=="strict"){file=".htseq_a10_genes_strand_union.counts"}else{file=".htseq_a0_genes_nostrand_intersectionNonempty.counts"} print $1,$1""file,$2;}}' sample_condition.csv > samples.csv;
+cd $TMP_DIR
+echo "
+	cd $TMP_DIR/global
+	rsync -ahr $SAMPLE_DIR/* .
+        #check if copy success, else exit
+        rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+        #deseq2
+        Rscript $R_SCRIPT_DIR/deseq2.global.R > global.rscript.log 2> global.rscript.log
+        #check if success, else exit
+        rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+        rm *counts
+        mkdir -p $OUTPUT_DIR/global; rsync -ahr * $OUTPUT_DIR/global/
+        #check if success, else exit
+        rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+        cd ..; rm -r global
+" >> $TMP_DIR/global.sh
+echo "$TMP_DIR/global.sh" > commands.txt
+
+
 for conditions in `tail -n +2 $CONDITION_FILE`;
 do
-	echo $conditions | awk -v FS="," '{print CONDITION1=$1; print CONDITION2=$2; print TYPE=$3}' | sh
+	CONDITION1=`echo $conditions | awk -v FS="," '{print $1}'`
+	CONDITION2=`echo $conditions | awk -v FS="," '{print $2}'`
+	TYPE=`echo $conditions | awk -v FS="," '{print $3}'`
 	COMP_NAME=$CONDITION1"_vs_"$CONDITION2"_"$TYPE;
 	mkdir -p $TMP_DIR/$COMP_NAME;
 	cd $TMP_DIR/$COMP_NAME;
 	rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
 	awk -v FS="," -v OFS="," -v type="$TYPE" '{if(NR==1){print "sampleName,fileName,condition"}else{if(type=="strict"){file=".htseq_a10_genes_strand_union.counts"}else{file=".htseq_a0_genes_nostrand_intersectionNonempty.counts"} print $1,$1""file,$2;}}' sample_condition.csv | grep "sampleName\|,$CONDITION1\|,$CONDITION2" > samples.csv;
+	cd $TMP_DIR
         echo "
 		cd $TMP_DIR/$COMP_NAME
         	rsync -ahr $SAMPLE_DIR/* .
         	#check if copy success, else exit
         	rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
-        	#trimming
+        	#deseq2
         	Rscript $R_SCRIPT_DIR/deseq2.2conditions.R $CONDITION1 $CONDITION2 > $COMP_NAME\".rscript.log\" 2> $COMP_NAME\".rscript.log\"
         	#check if success, else exit
         	rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
