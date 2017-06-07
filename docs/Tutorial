@@ -1,0 +1,39 @@
+Pikasub2 is a changed version of pikasub.sh.
+
+Make an alias of pikasub2.sh, this makes submitting jobs easy
+--- Source pikasub2.sh ---
+--- check_config_file ---
+This can all be written in the bashrc for easier use.
+
+The pikasub2 needs to be sourced, then you all the commands that come with pika will be available in the hpc.
+Basedir is adjusted and is now fully functional in the source map after sourcing it. 
+When a single job or batch job is submitted by pika, the program will make a map with the date and time of submission. 
+Everything will then be written in that directory.
+
+The scripts are still usefull to pikasub2.
+If the script exists in the directory of scripts, then pika will be very easy to use.
+Make a copy of the script that needs to be used.
+--- script_to_engine "the copy of the script" ---
+The command "script to engine" will fill in the scripts ##[RUN] parameters into the specified engine that was given in 
+the config file.
+(if the engine exists in pika)
+--- copy_and_correct_script "the script" ---
+This function will fill in all the modules that need to be loaded from the module file and all the directories already
+specified in the config file (ex. genome_directory).
+
+-------------------------------------------------- pipeline generation ------------------------------------------------
+If a pipeline needs to be generated pika can give you an flowchart but NOT a working pipeline which submits all the tasks
+for you.
+
+The pipeline generation is easy. Open your favorite text-editor and write the pipeline with ##[JOB] before the script that
+has to be used.
+
+Fill in the mandatory options or change them with commands like 'sed' or 'awk' before submitting this as a pipeline.
+
+--- copy_pipeline "the crafted pipeline file" ---
+
+This command will check for the jobs in the directory off the scripts and copy the ##[HOWTO] of the scripts into the pipeline.
+It will also check how many ##[JOB] there are and echo them back. 
+The result is a howto file of the pipeline and how to submit each job into the hpc.
+
+--- For further investigation the libs files can be opened to find other commands from pika ---
