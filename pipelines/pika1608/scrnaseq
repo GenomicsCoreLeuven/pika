@@ -1,0 +1,38 @@
+#single-cell RNA seq pipeline
+
+##[HELP] The single-cell RNAseq Differential Expression pipeline
+##[HELP] ==========================================================
+##[HELP] 
+##[HELP] The pipeline starts from multiple samples. Samples should be single reads.
+##[HELP] Optional fastq is available.
+##[HELP] STAR is used for mapping the samples to the reference genome
+##[HELP] Htseq count is used to count the reads per feature (gene/transcript/...)
+##[HELP] DE is done using DESeq2, EdgeR, MAST, monocle2
+
+##[HOWTO] #This script describes how to execute the scRNAseq DE pipeline.
+##[HOWTO] #After the copy, a file will be generated with this info, together with the standard help.
+##[HOWTO] #Further more the generated file will contain all commands needed to launch the scripts on the HPC.
+##[HOWTO] #Together with short one line commands to generate needed files, and check temperary results.
+##[HOWTO] #This pipeline is made to be used in a analysis for 2 conditions.
+
+##[JOB] fastqc
+
+##[JOB] STAR_mapping
+
+##[JOB] htseq_scRNA
+
+# Before using the tools for differential expression you must use scater.R to analyze your samples for quality control
+# You need to create the conditions.txt file for the deseq, edger, MAST and monocle2 steps.
+# You also need to create a sample_condition.csv file for deseq2, monocle2 and edgeR. MAST needs an sample_condition_wellKey.csv
+
+##[JOB] deseq2.scRNA
+##[CHANGE] deseq2.scRNA sed 's:R_SCRIPT_DIR="":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/scrnaseq\":g'
+
+##[JOB] edgeR.scRNA
+##[CHANGE] edgeR.scRNA  sed 's:R_SCRIPT_DIR="":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/scrnaseq\":g'
+
+##[JOB] MAST.scRNA
+##[CHANGE] MAST.scRNA sed 's:R_SCRIPT_DIR="":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/scrnaseq\":g'
+
+##[JOB] monocle.scRNA
+##[CHANGE] monocle.scRNA  sed 's:R_SCRIPT_DIR="":R_SCRIPT_DIR=\"\$PROJECT_DIR/jobs/scrnaseq\":g'
