@@ -1,0 +1,17 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	150gb
+##[RUN] NODES	6
+##[RUN] CORES_PER_NODE	10
+##[RUN] NAME	indexing
+##[RUN] ACCOUNT	default_project
+
+module load STAR
+
+REF_DIR=""
+GEN_DIR=""
+GTF_DIR=""
+
+mkdir $GEN_DIR;
+
+STAR --runThreadN 10 --runMode genomeGenerate --genomeDir $GEN_DIR  --sjdbGTFfile $GTF_DIR/file.gtf --genomeFastaFiles $REF_DIR/genome.fa;
