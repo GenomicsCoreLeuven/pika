@@ -50,19 +50,19 @@ fi
 for conditions in `tail -n +1 $CONDITION_FILE`;
 do
   	CONDITION1=`echo $conditions | awk -v FS="," '{print $1}'`
-    CONDITION2=`echo $conditions | awk -v FS="," '{print $2}'`
-    TYPE=`echo $conditions | awk -v FS="," '{print $3}'`
-    COMP_NAME=$CONDITION1"_vs_"$CONDITION2"_"$TYPE;
-    CUR_DIR=$(dirname $0);
+	CONDITION2=`echo $conditions | awk -v FS="," '{print $2}'`
+	TYPE=`echo $conditions | awk -v FS="," '{print $3}'`
+	COMP_NAME=$CONDITION1"_vs_"$CONDITION2"_"$TYPE;
+	CUR_DIR=$(dirname $0);
+	
+	JOBID=$PBS_JOBID;
+	mkdir -p $SCRATCH_DIR/$JOBID;
+	TMPDIR=$SCRATCH_DIR/$JOBID;
+	TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+	cd $TMP_DIR;
     
-    JOBID=$PBS_JOBID;
-    mkdir -p $SCRATCH_DIR/$JOBID;
-    TMPDIR=$SCRATCH_DIR/$JOBID;
-    TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
-    cd $TMP_DIR;
-    
-    rsync -ahrL $SAMPLE_DIR/all_data.txt .;
-    rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
+	rsync -ahrL $SAMPLE_DIR/all_data.txt .;
+	rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
 
 	Rscript $R_SCRIPT_DIR/monocle2.scRNA.R $CONDITION1 $CONDITION2 > $COMP_NAME".rscript.log" 2> $COMP_NAME".rscript.log";
 
