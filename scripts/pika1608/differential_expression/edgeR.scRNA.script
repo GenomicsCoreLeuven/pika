@@ -1,0 +1,80 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	6:00:00
+##[RUN] MEMORY	30gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	edger
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika 16.08
+##[HELP] This tool will do the differential expression analysis for the standard edgeR algorithm
+##[HELP] This script requires a sample_condition.csv file. This file is a comma seperated file with as heading: SAMPLE,CONDITION
+##[HELP] This scripts runtime is limited (few minutes)
+##[HELP] You must install edger first in your local R:
+##[HELP] Load the R module: module load R
+##[HELP] Start R: R
+##[HELP] Now you are in an R environment
+##[HELP] add a new source to install new tools: source("https://bioconductor.org/biocLite.R")
+##[HELP] install edgeR: biocLite("edgeR")
+##[HELP] note that this is interactive, and will warn you that you cannot install it in the global directory. Just accept that it will be installed in your personal directory. Also choose the all option when asked to install the needed dependencies
+##[HELP] if gplots is not installed, you have to install it to: install.packages("gplots")
+##
+##[HOWTO] #before running this script use scater.R to do a quality control on the data
+##[HOWTO] #edger
+##[HOWTO] #Create a data file (conditions.txt), with a CONDITION1, CONDITION2 and a TYPE column
+##[HOWTO] #Create a sample_condition.csv file. This comma seperated file has a header: SAMPLE,CONDITION and with each sample the correct condition.
+##[HOWTO] #The edgeR module must be installed in your local R directory (see HELP for more info)
+##[HOWTO] #This uses the worker module
+##[HOWTO] module load worker
+##[HOWTO] #start the module:
+##[HOWTO] pikasub edgeR.scRNA.pbs
+
+#loading the modules
+#extra_modules
+module load R
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/HTSeq";
+OUTPUT_DIR="$PROJECT_DIR/edgeR";
+SCRATCH_DIR="$PROJECT_DIR/tmp";
+R_SCRIPT_DIR="";
+SAMPLE_CONDITIONS="$SAMPLE_DIR/sample_condition.csv";
+
+if [ -z "$BATCH_FILE" ];
+then
+       #variable is empty or unset
+       CONDITION_FILE="$PROJECT_DIR/conditions.txt";
+else
+       CONDITION_FILE=$BATCH_FILE
+fi
+
+#the actual script
+for conditions in `tail -n +1 $CONDITION_FILE`;
+do
+  CONDITION1=`echo $conditions | awk -v FS="," '{print $1}'`
+  CONDITION2=`echo $conditions | awk -v FS="," '{print $2}'`
+  TYPE=`echo $conditions | awk -v FS="," '{print $3}'`
+	COMP_NAME=$CONDITION1"_vs_"$CONDITION2"_"$TYPE;
+	CUR_DIR=$(dirname $0);
+
+	JOBID=$PBS_JOBID;
+	mkdir -p $SCRATCH_DIR/$JOBID;
+	TMPDIR=$SCRATCH_DIR/$JOBID;
+	TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+	cd $TMP_DIR;
+
+	rsync -ahrL $SAMPLE_DIR/* .;
+	rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
+
+	awk -v FS="," -v OFS="," -v type="$TYPE" '{if(NR==1){print "LibraryName,LibraryLayout,condition,shortname,countf"}else{if(type=="strict"){file=""}else{file=""} print $1,"RNAseq",$2,$1,$1""file;}}' sample_condition.csv | grep "LibraryName\|,$CONDITION1,\|,$CONDITION2," > samples.csv;
+
+	Rscript $R_SCRIPT_DIR/edger.scRNA.R $CONDITION1 $CONDITION2 > $COMP_NAME".rscript.log" 2> $COMP_NAME".rscript.log";
+
+	rm *count.txt;
+
+	mkdir -p $OUTPUT_DIR/$COMP_NAME;
+	cd $OUTPUT_DIR/$COMP_NAME;
+	rsync -ahrL $TMP_DIR/* .;
+
+	rm -r $TMP_DIR;
+done
