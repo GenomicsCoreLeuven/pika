@@ -11,7 +11,7 @@ gbsy	gbsy/v0.0alpha-Java1.8.0_77
 HTSeq	HTSeq/0.6.1p1-intel-2015a-Python-2.7.9
 LINKS	LINKS/1.7
 picard	picard/2.2.2-Java1.8.0_77
-R	R/3.3.1-foss-2015a-tcl
+R	R/3.3.2-foss-2015a-tcl
 SAMtools	SAMtools/1.1-intel-2015a
 SGA	SGA/0.10.14-foss-2015a
 STAR	STAR/2.5.2b-GCC_4.9.2
@@ -19,3 +19,5 @@ Stride	Stride/1.0-foss-2015a
 trimmomatic	trimmomatic/0.36-Java1.8.0_77
 VarScan	VarScan/v2.4.2-Java1.8.0_77
 vcflib	vcflib/20160720-intel-2015a
+parallel  parallel/20141122-GCC-4.9.2
+elprep  elprep/2.5
