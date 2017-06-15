@@ -64,7 +64,7 @@ do
 	rsync -ahrL $SAMPLE_DIR/all_data.txt .;
 	rsync -ahrL $SAMPLE_CONDITIONS sample_condition.csv;
 
-	Rscript $R_SCRIPT_DIR/monocle2.scRNA.R $CONDITION1 $CONDITION2 > $COMP_NAME".rscript.log" 2> $COMP_NAME".rscript.log";
+	Rscript $R_SCRIPT_DIR/monocle.scRNA.R $CONDITION1 $CONDITION2 > $COMP_NAME".rscript.log" 2> $COMP_NAME".rscript.log";
 
 	mkdir -p $OUTPUT_DIR/$COMP_NAME;
 	cd $OUTPUT_DIR/$COMP_NAME;
