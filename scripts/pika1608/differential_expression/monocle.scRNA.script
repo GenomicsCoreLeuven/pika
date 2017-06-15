@@ -14,7 +14,7 @@
 ##[HELP] Start R: R
 ##[HELP] Now you are in an R environment
 ##[HELP] add a new source to install new tools: source("https://bioconductor.org/biocLite.R")
-##[HELP] install scde: biocLite("monocle")
+##[HELP] install monocle2: biocLite("monocle")
 ##[HELP] note that this is interactive, and will warn you that you cannot install it in the global directory. Just accept that it will be installed in your personal directory. Also choose the all option when asked to install the needed d$
 ##
 ##[HOWTO] #before running this script use scater.R to do a quality control on the data
