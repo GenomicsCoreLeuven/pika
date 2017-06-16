@@ -9,22 +9,49 @@ condition2 <- args[2]
 
 print("--R-monocle2--Preparing data--")
 HSMM_expr_matrix <- read.delim("all_data.txt", row.names = 1)
+noint <- rownames(HSMM_expr_matrix) %in% c("__alignment_not_unique","__no_feature","__ambiguous")
+keep = !noint
+HSMM_expr_matrix <- HSMM_expr_matrix[keep,]
 HSMM_sample_sheet <- read.delim("sample_condition.csv", row.names = 1, sep = ",")
 
 print("--R-monocle2--making dataset --") 
 pd <- new("AnnotatedDataFrame", data = HSMM_sample_sheet)
+gene_df <- data.frame(gene_short_name = rownames(HSMM_expr_matrix))
+rownames(gene_df) <- gene_df$gene_short_name
+fd <- new("AnnotatedDataFrame", data = gene_df)
 HSMM <- newCellDataSet(as.matrix(HSMM_expr_matrix), 
                        phenoData = pd, expressionFamily = negbinomial())
 
 print("--R-monocle2--estimate normalisation factors--")
 HSMM <- estimateSizeFactors(HSMM)
-#HSMM <- estimateDispersions(HSMM)
+HSMM <- estimateDispersions(HSMM)
 
 print("--R-monocle2-filter out low quality genes--")
 HSMM <- detectGenes(HSMM, min_expr = 0.1)
 
 print("--R-monocle2-filter out low expressed genes or artefact genes--")
 expressed_genes <- row.names(subset(fData(HSMM), num_cells_expressed >= 2))
+
+print("--R-monocle2- unsupervised clustering of the dataset--")
+disp_table <- dispersionTable(HSMM)
+unsup_clustering_genes <- subset(disp_table, mean_expression >= 0.1)
+HSMM <- setOrderingFilter(HSMM, unsup_clustering_genes$gene_id)
+setEPS()
+postscript(paste(condition1, "_vs_",condition2, ".ordering_genes.eps", sep=""))
+plot_ordering_genes(HSMM)
+dev.off()
+
+print("--R-monocle2- reducing dimension and makeing PCA plot--")
+HSMM <- reduceDimension(HSMM[expressed_genes,], max_components = 2, num_dim = 9, reduction_method = 'tSNE', perplexity = 5, verbose = T)
+##The performance of t-SNE is fairly robust under different settings of the perplexity. 
+##The most appropriate value depends on the density of your data. 
+##Loosely speaking, one could say that a larger/denser dataset requires a larger perplexity.
+##typical values for the perplexity range between 5 and 50
+HSMM <- clusterCells(HSMM, num_clusters = 2)
+setEPS()
+postscript(paste(condition1, "_vs_", condition2, ".PCA_plot.eps", sep=""))
+plot_cell_clusters(HSMM,1 ,2, color = "CONDITION", markers=c(condition1,condition2))
+dev.off()
 
 print("--R-monocle2-making the pie chart in R--")
 pie <- ggplot(pData(HSMM), aes(x = factor(1), fill = factor(CONDITION))) +
