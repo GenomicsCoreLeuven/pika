@@ -9,7 +9,7 @@ condition2 <- args[2]
 
 print("--R-monocle2--Preparing data--")
 HSMM_expr_matrix <- read.delim("all_data.txt", row.names = 1)
-noint <- rownames(HSMM_expr_matrix) %in% c("__alignment_not_unique","__no_feature","__ambiguous")
+noint <- rownames(HSMM_expr_matrix) %in% c("__alignment_not_unique","__ambiguous","__no_feature","__ambiguous","__too_low_aQual","__not_aligned")
 keep = !noint
 HSMM_expr_matrix <- HSMM_expr_matrix[keep,]
 HSMM_sample_sheet <- read.delim("sample_condition.csv", row.names = 1, sep = ",")
@@ -80,6 +80,4 @@ diff_test_res <- sig_genes[order(sig_genes[,"pval"]),]
 print("--R-monocle2-printing relevant results in a table--")
 #order on pvalue 
 relevant_results <- diff_test_res[,c("pval", "qval")]
-noint <- c("__alignment_not_unique","__ambiguous","__no_feature","__ambiguous","__too_low_aQual","__not_aligned")
-relevant_results <- relevant_results[!(row.names(relevant_results) %in% noint),]
 write.csv(relevant_results, file=paste(condition1, "_vs_", condition2, ".diff_test_res.csv", sep = ""))
