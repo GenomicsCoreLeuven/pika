@@ -5,7 +5,7 @@
 ##[RUN] MEMORY	120gb
 ##[RUN] NAME	freebayes_regions
 ##[RUN] ACCOUNT	default_project 
-##[VERSION] pikaDEV
+##[VERSION] pika1804
 ##[HELP] This is a batch script: it uses REGION parameter (region is chr:begin-end)
 ##[HELP] This tool will do a variant calling in the given region
 ##[HELP] This script will use only one cpu, it can use a lot of RAM (depends on the number of input files), so only use 1 cpu per node, preferable to start with 120Gb per node
@@ -83,7 +83,7 @@ do
                 bamfiles="";
                 for i in \`ls -1 -d $BAM_DIR/*bam\`;
                 do
-                        bamfiles=\"\$bamfiles \$i\";
+                        bamfiles="\$bamfiles \$i";
                 done
 
 		freebayes --fasta-reference $GENOME_DIR/genome.fa --region \"$REGION\" $FREEBAYES_OPTIONS $bamfiles > $NR\".vcf\"

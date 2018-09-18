@@ -1,0 +1,93 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	100gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	qiime2
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika1804
+##[HELP] This tool run the qiime2 pipeline
+##
+##[HOWTO] #metagenomics qiime2
+##[HOWTO] #start the module:
+##[HOWTO] pikasub qiime2.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+
+
+#loading the modules
+#extra_modules
+module load qiime2
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/qiime2";
+OUTPUT_DIR="$PROJECT_DIR/qiime2_diversity";
+SCRATCH_DIR=~;
+THREADS="20";
+SAMPLE_DEPTH="";
+CLASSIFIER="$GENOME_DIR/classifier.qza";
+
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/* $TMP_DIR/;
+
+
+#Alpha and beta diversity analysis
+qiime diversity core-metrics --i-phylogeny rooted-tree.qza --i-table table.qza --p-sampling-depth $SAMPLE_DEPTH --output-dir cm$SAMPLE_DEPTH
+
+qiime diversity alpha-group-significance --i-alpha-diversity cm$SAMPLE_DEPTH/faith_pd_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm$SAMPLE_DEPTH/faith-pd-group-significance
+
+qiime diversity alpha-group-significance --i-alpha-diversity cm$SAMPLE_DEPTH/evenness_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm$SAMPLE_DEPTH/evenness-group-significance
+
+qiime diversity alpha-correlation --i-alpha-diversity cm$SAMPLE_DEPTH/faith_pd_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm$SAMPLE_DEPTH/faith-pd-correlation
+
+qiime diversity alpha-correlation --i-alpha-diversity cm$SAMPLE_DEPTH/evenness_vector.qza --m-metadata-file sample-metadata.tsv --o-visualization cm$SAMPLE_DEPTH/evenness-correlation
+
+qiime diversity beta-group-significance --i-distance-matrix cm$SAMPLE_DEPTH/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --m-metadata-category BodySite --o-visualization cm$SAMPLE_DEPTH/unweighted-unifrac-body-site-significance
+
+qiime diversity beta-group-significance --i-distance-matrix cm$SAMPLE_DEPTH/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --m-metadata-category Subject --o-visualization cm$SAMPLE_DEPTH/unweighted-unifrac-subject-group-significance
+
+qiime diversity bioenv --i-distance-matrix cm$SAMPLE_DEPTH/unweighted_unifrac_distance_matrix.qza --m-metadata-file sample-metadata.tsv --o-visualization cm$SAMPLE_DEPTH/unweighted-unifrac-bioenv
+
+qiime diversity bioenv --i-distance-matrix cm$SAMPLE_DEPTH/bray_curtis_distance_matrix.qza --m-metadata-file sample-metadata.tsv --o-visualization cm$SAMPLE_DEPTH/bray-curtis-bioenv
+
+qiime emperor plot --i-pcoa cm$SAMPLE_DEPTH/unweighted_unifrac_pcoa_results.qza --m-metadata-file sample-metadata.tsv --p-custom-axis DaysSinceExperimentStart --o-visualization cm$SAMPLE_DEPTH/unweighted-unifrac-emperor
+
+qiime emperor plot --i-pcoa cm$SAMPLE_DEPTH/bray_curtis_pcoa_results.qza --m-metadata-file sample-metadata.tsv --p-custom-axis DaysSinceExperimentStart --o-visualization cm$SAMPLE_DEPTH/bray-curtis-emperor
+
+#Taxonomic analysis
+
+qiime feature-classifier classify --i-classifier $CLASSIFIER --i-reads rep-seqs.qza --o-classification taxonomy
+
+qiime taxa tabulate --i-data taxonomy.qza --o-visualization taxonomy
+
+qiime taxa barplot --i-table table.qza --i-taxonomy taxonomy.qza --m-metadata-file sample-metadata.tsv --o-visualization taxa-bar-plots
+
+#Differential abundance analysis
+
+qiime composition add-pseudocount --i-table table.qza --o-composition-table comp-table
+
+qiime composition ancom --i-table comp-table.qza --m-metadata-file sample-metadata.tsv --m-metadata-category BodySite --o-visualization ancom-BodySite
+
+qiime taxa collapse --i-table table.qza --i-taxonomy taxonomy.qza --p-level 2 --o-collapsed-table table-l2
+
+qiime composition add-pseudocount --i-table table-l2.qza --o-composition-table comp-table-l2
+
+qiime composition ancom --i-table comp-table-l2.qza --m-metadata-file sample-metadata.tsv --m-metadata-category BodySite --o-visualization l2-ancom-BodySite
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahr $TMP_DIR/$SAMPLE* .;
+rm -rf $TMP_DIR;
+
+

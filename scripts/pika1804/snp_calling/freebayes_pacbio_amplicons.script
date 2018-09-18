@@ -3,10 +3,10 @@
 ##[RUN] NODES	25
 ##[RUN] CORES_PER_NODE	1
 ##[RUN] MEMORY	120gb
-##[RUN] NAME	freebayes_regions
+##[RUN] NAME	freebayes_pacbio_amplicons
 ##[RUN] ACCOUNT	default_project 
-##[VERSION] pikaDEV
-##[HELP] This is a batch script: it uses REGION parameter (region is chr:begin-end)
+##[VERSION] pika1804
+##[HELP] This is batch  script: it uses REGION parameter (region is chr:begin-end)
 ##[HELP] This tool will do a variant calling in the given region
 ##[HELP] This script will use only one cpu, it can use a lot of RAM (depends on the number of input files), so only use 1 cpu per node, preferable to start with 120Gb per node
 ##[HELP] This scripts runtime depends on the compelity of the region, the number of samples and the depth of the region
@@ -17,7 +17,7 @@
 ##[HOWTO] #start the module: (in case all regions can not be ran in 1 run,
 ##[HOWTO] #split the regions file in multiple files)
 ##[HOWTO] pikasub freebayes_regions.pbs
-##[HOWTO] #merging is now included in this script
+##[HOWTO] #merging happens now in this script
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)
@@ -38,11 +38,12 @@ module load parallel
 PROJECT_DIR="";
 GENOME_DIR="";
 BAM_DIR="$PROJECT_DIR/mapped";
-FREEBAYES_OPTIONS="-m 15 -q 15 --use-duplicate-reads --ploidy 2 ";
+FREEBAYES_OPTIONS="-m 15 -q 15 --ploidy 2 ";
+HAPLOTYPE_OPTIONS="--haplotype-window 500 --haplotype-basis-alleles";
 OUTPUT_PART=".m15.q15.useduplicates.ploidy2";
-FREEBAYES_OUTPUT_FILE_NAME="freebayes"$OUTPUT_PART"_"$NR".vcf";
-OUTPUT_DIR="$PROJECT_DIR/snp_calling/parts";
-SCRATCH_DIR="$OUTPUT_DIR/tmp";
+FREEBAYES_OUTPUT_FILE_NAME="freebayes"$OUTPUT_PART".vcf";
+OUTPUT_DIR="$PROJECT_DIR/haplotype_calling";
+SCRATCH_DIR="~";
 
 
 NODEFILE="";
@@ -55,15 +56,12 @@ else
 fi
 
 
+
 #the actual script
 JOBID="";
 mkdir -p $SCRATCH_DIR/$JOBID;
 TMP_DIR=$SCRATCH_DIR/$JOBID;
 cd $TMP_DIR;
-mkdir -p $OUTPUT_DIR;
-
-
-freebayes --fasta-reference $TMP_DIR/genome/genome.fa --region "$REGION" $FREEBAYES_OPTIONS $bamfiles > $TMP_DIR/$FREEBAYES_OUTPUT_FILE_NAME;
 
 #setting parallel environment
 export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY";
@@ -73,22 +71,29 @@ cat $NODEFILE | sort | uniq > nodefile
 NR=0
 for REGION in `tail -n +2 $REGION_FILE`;
 do
-        NR=$((NR + 1))
+	NR=$((NR + 1))
         echo "
                 cd $TMP_DIR
                 TMPDIR=$TMP_DIR
-                TMP_DIR=\`mktemp -d -t tmp.XXXXXXXX\`
+		TMP_DIR=\`mktemp -d -t tmp.XXXXXXXX\`
                 cd \$TMP_DIR
 
-                bamfiles="";
-                for i in \`ls -1 -d $BAM_DIR/*bam\`;
-                do
-                        bamfiles=\"\$bamfiles \$i\";
-                done
+		bamfiles="";
+		for i in \`ls -1 -d $BAM_DIR/*bam\`;
+		do
+		        bamfiles="\$bamfiles \$i";
+		done
 
-		freebayes --fasta-reference $GENOME_DIR/genome.fa --region \"$REGION\" $FREEBAYES_OPTIONS $bamfiles > $NR\".vcf\"
+		#generate high quality candidates
+		freebayes --fasta-reference $GENOME_DIR/genome.fa --region \"$REGION\" $FREEBAYES_OPTIONS \$bamfiles | vcffilter -f \"QUAL > 20\" > vars.vcf;
 
-                #check if success, else exit
+		#check if success, else exit
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+		#generate haplotypes
+		freebayes --fasta-reference $GENOME_DIR/genome.fa $HAPLOTYPE_OPTIONS vars.vcf --region \"$REGION\" $FREEBAYES_OPTIONS \$bamfiles > $NR\".\"$OUTPUT_PART\".vcf\";
+
+		#check if success, else exit
                 rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
 
         " >> $TMP_DIR/$NR.sh;
@@ -102,13 +107,15 @@ rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
 
 #all parts are generated: merge
 cd $TMP_DIR;
-cat */*.vcf | vcffirstheader > $TMP_DIR/combined.tmp
+cat */*$OUTPUT_PART*.vcf | vcffirstheader > $TMP_DIR/combined.tmp
 grep "^#" $TMP_DIR/combined.tmp > $TMP_DIR/sorted.tmp;
 grep -v "^#" $TMP_DIR/combined.tmp | sort -k1,1 -k2,2n >> $TMP_DIR/sorted.tmp;
 rm $TMP_DIR/combined.tmp;
 cat $TMP_DIR/sorted.tmp | vcfuniq > $OUTPUT_DIR/$FREEBAYES_OUTPUT_FILE_NAME;
 
 rm -rf $TMP_DIR;
+
+
 
 
 

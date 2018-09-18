@@ -5,7 +5,7 @@
 ##[RUN] CORES_PER_NODE	20
 ##[RUN] NAME	bowtie_mapping_population
 ##[RUN] ACCOUNT	default_project
-##[VERSION] pikaDEV
+##[VERSION] pika1804
 ##[HELP] This is a batch script: it uses SAMPLE parameters
 ##[HELP] This tool will map the samples to the reference genome
 ##[HELP] This script will use only one cpu
@@ -92,14 +92,14 @@ do
 		if [ -f $SAMPLE.R2.fastq ];
 		then
         		#paired end mapping
-        		FASTQ_FILES=\"-1 $TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq -2 $TMP_DIR/$SAMPLE/$SAMPLE.R2.fastq\";
+        		FASTQ_FILES="-1 $TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq -2 $TMP_DIR/$SAMPLE/$SAMPLE.R2.fastq";
 		else
         		#single read mapping
-        		FASTQ_FILES=\"$TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq\";
+        		FASTQ_FILES="$TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq";
 		fi
 
 		THREADS=\`nproc\`
-		bowtie2 -q -p \$THREADS --seed 1 $BOWTIE_OPTIONS --rg-id $SAMPLE --rg ID:$SAMPLE --rg LB:$SAMPLE --rg SM:$SAMPLE --rg PU:$SAMPLE --rg PL:illumina --rg CN:GenomicsCoreLeuven -x $BOWTIE_GENOME \$FASTQ_FILES > /dev/stdout 2> $SAMPLE.bowtie2.log | elprep /dev/stdin $SAMPLE\".bam\" --mark-duplicates --sorting-order coordinate --nr-of-threads \$THREADS;
+		bowtie2 -q -p \$THREADS --seed 1 $BOWTIE_OPTIONS --rg-id $SAMPLE --rg ID:$SAMPLE --rg LB:$SAMPLE --rg SM:$SAMPLE --rg PU:$SAMPLE --rg PL:illumina --rg CN:GenomicsCoreLeuven -x $BOWTIE_GENOME \$FASTQ_FILES > /dev/stdout 2> $SAMPLE.bowtie2.log | elprep /dev/stdin $SAMPLE\".bam\" --mark-duplicates --sorting-order coordinate --nr-of-threads $THREADS;
 		
 		#check if pipe success, else exit		
 		rcs=\${PIPESTATUS[*]}; rc=0; for i in \${rcs}; do rc=\$((\$i > \$rc ? \$i : \$rc)); done; if [[ \$rc != 0 ]]; then exit \$rc; fi

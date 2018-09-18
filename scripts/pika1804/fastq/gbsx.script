@@ -5,7 +5,7 @@
 ##[RUN] CORES_PER_NODE	20
 ##[RUN] NAME	gbsx
 ##[RUN] ACCOUNT	default_project
-##[VERSION] pikaDEV
+##[VERSION] pika1804
 ##[HELP] This is a batch script: it uses RUN parameters
 ##[HELP] This tool will demultiplex runs with inline barcodes
 ##[HELP] It needs a file barcodes.tsv (see gbsx help) in the run directory
@@ -93,7 +93,7 @@ do
 	" >> $TMP_DIR/$RUN.sh;
 
 
-        echo "$TMP_DIR/$RUN.sh" >> commands.txt
+        echo "$TMP_DIR/$SAMPLE.sh" >> commands.txt
 done
 
 cat commands.txt | parallel --sshloginfile nodefile -j "$PARALLEL_JOBS" 'sh {} > {}.log 2> {}.err'

@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION="pika 16.08 dev";
+VERSION="pika1804"
 BASEDIR=$(dirname $0);
 LIB_DIR="$BASEDIR/libs";
 source $LIB_DIR/variables_and_settings.sh;
@@ -18,7 +18,7 @@ GENOMEDIR="";
 JOBDIR="";
 EXTRA_MODULES="";
 MY_SCRATCH=~;
-MODULE_VERSION="";
+MODULE_VERSION="pika1804"
 GRID_ENGINE="";
 declare -A MODULE_NAME_ARRAY=();
 declare -A MODULE_VERSION_ARRAY=();

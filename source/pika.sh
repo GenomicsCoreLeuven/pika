@@ -1,5 +1,5 @@
 #!/bin/sh
-VERSION="pika 17.01 dev";
+VERSION="pika1804"
 #BASEDIR=$(dirname $0);
 BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
 LIB_DIR="$BASEDIR/libs";
@@ -19,7 +19,7 @@ GENOMEDIR="";
 JOBDIR="";
 EXTRA_MODULES="";
 MY_SCRATCH=~;
-MODULE_VERSION="";
+MODULE_VERSION="pika1804"
 GRID_ENGINE="";
 declare -A MODULE_NAME_ARRAY=();
 declare -A MODULE_VERSION_ARRAY=();
@@ -149,7 +149,7 @@ else
 		exists_module=$?;
 		if [ "$exists_module" == 0 ];
 		then
-			MODULE_VERSION="${VALUE_ARRAY[MODULE_VERSION]}";
+			MODULE_VERSION="pika1804"
 			load_modules;
 		fi
 	fi

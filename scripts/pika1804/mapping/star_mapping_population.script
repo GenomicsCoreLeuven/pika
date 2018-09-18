@@ -1,0 +1,111 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	12:00:00
+##[RUN] MEMORY	100gb
+##[RUN] NODES	10
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	star_mapping_population
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika1804
+##[HELP] This is a batch script: it uses SAMPLE parameters
+##[HELP] This tool will map the reads to the reference genome
+##[HELP] This script will use only one cpu per sample
+##[HELP] This script runs only 2 minutes per 1M reads
+##[HELP] This scripts needs to be edited: change the flash parameter, and the genome directory in the prolog file
+##
+##[HOWTO] #STAR mapping for populations
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
+##[HOWTO] #The script need to be edited: change the flash parameter
+##[HOWTO] #The genome directory in the prolog file will need to be changed
+##[HOWTO] #When the THREADS variable in this script is changed, this can be ran as multithreaded population mapping, start like this (replace 20 with the number of given threads) (standard multithreaded):
+##[HOWTO] pikasub star_mapping_population.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+
+#loading the modules
+#extra_modules
+module load STAR
+module load elprep
+module load SAMtools
+module load parallel
+version_STAR="STAR"
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/bbduk";
+OUTPUT_DIR="$PROJECT_DIR/mapped";
+SCRATCH_DIR=~;
+GENOME_DIR="";
+#This parameter can be changed for multithreaded mapping
+
+NODEFILE="";
+if [ -z "$BATCH_FILE" ];
+then
+        #variable is empty or unset
+        SAMPLE_FILE="$PROJECT_DIR/jobs/samples.txt";
+else
+        SAMPLE_FILE=$BATCH_FILE
+fi
+
+#the actual script
+JOBID="";
+GENOME_DIR="$GENOME_DIR/$version_STAR"
+
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+mkdir -p $OUTPUT_DIR;
+
+#setting parallel environment
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY";
+#end setting parallel environment
+PARALLEL_JOBS=`nproc`;
+cat $NODEFILE | sort | uniq > nodefile
+
+for SAMPLE in `tail -n +2 $SAMPLE_FILE`;
+do
+        echo "
+                cd $TMP_DIR
+                mkdir $SAMPLE
+                cd $SAMPLE
+                
+                rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fastq.gz $TMP_DIR/$SAMPLE/;
+                #check if copy success, else exit
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+        
+                gunzip *gz;
+
+                THREADS=\`nproc\`
+		STAR --runMode alignReads --runThreadN \$THREADS --genomeDir $GENOME_DIR --readFilesIn $SAMPLE.R1.fastq --outStd SAM --outSAMtype SAM --outFileNamePrefix $TMP_DIR/$SAMPLE/$SAMPLE | elprep /dev/stdin $SAMPLE\".bam\" --replace-read-group \"ID:$SAMPLE LB:$SAMPLE PL:illumina SM:$SAMPLE CN:GenomicsCoreLeuven\" --sorting-order coordinate --nr-of-threads $THREADS
+                
+                #check if pipe success, else exit               
+                rcs=\${PIPESTATUS[*]}; rc=0; for i in \${rcs}; do rc=\$((\$i > \$rc ? \$i : \$rc)); done; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+                rm *fastq
+
+                samtools index -b $SAMPLE".bam";
+                #check if samtools success, else exit
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+
+                mkdir -p $OUTPUT_DIR
+                rsync -ahr $SAMPLE* $OUTPUT_DIR/
+                #check if copy success, else exit
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+                
+                rm -r $TMP_DIR/$SAMPLE
+
+        " >> $TMP_DIR/$SAMPLE.sh;
+        echo "$TMP_DIR/$SAMPLE.sh" >> commands.txt
+done
+
+cat commands.txt | parallel --sshloginfile nodefile -j "$PARALLEL_JOBS" 'sh {} > {}.log 2> {}.err'
+
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
+
+

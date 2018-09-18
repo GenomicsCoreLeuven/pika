@@ -1,0 +1,68 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	20:00:00:00
+##[RUN] MEMORY	240gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	10
+##[RUN] NAME	abyss
+##[RUN] ACCOUNT	default_project
+##[RUN] PARTITION	smp1
+##[VERSION] pika1804
+##[HELP] This is a regular script
+##[HELP] This tool will assemble illumina data
+##[HELP] This script is multithreaded. 
+##[HELP] This script runs for around 3 days, using 60 cpus (cerebro) for 2 rapid lanes hiseq2500
+##[HELP] This script needs to be edited before run
+##
+##[HOWTO] #ABYSS
+##[HOWTO] #The script needs to be edited before ran (edit the information about the se and pe libraries, as well as inserting the correct file names)
+##[HOWTO] #start the module:
+##[HOWTO] pikasub abyss.pbs
+#loading the modules
+#extra_modules
+module load ABySS
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+KMER="31";
+SAMPLE="sample";
+OUTPUT_DIR="$PROJECT_DIR/abyss_$KMER";
+SCRATCH_DIR=~;
+THREADS="10";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync $SAMPLE_DIR/$SAMPLE*.gz .;
+gunzip *gz;
+
+#normal run
+#paired end data should start with pe, all pe libraries should be listed in the lib variable
+## lib="pe1 pe2" pe1="run1.R1.fastq run1.R2.fastq" pe2="run2.R1.fastq run2.R2.fastq"
+#single end data can be added with the se variable, all se can be added after each other
+## se="run1.R1.fastq run2.R1.fastq"
+
+filelist="";
+liblist="";
+count=1
+for i in `ls -1 *R1*`;
+do
+        j=`echo $i | sed "s:.R1.:.R2.:g"`;
+	lib="pe_$count";
+	liblist=$liblist" "$lib;
+	filelist=$filelist" "$lib"=\"$i $j\"";
+	let count++;
+done
+
+
+NAME=$SAMPLE"_k"$KMER;
+abyss-pe name="$NAME" k=$KMER lib="$liblist" $filelist np=$THREADS j=$THREADS;
+
+rm *fastq;
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahrL $TMP_DIR .;
+rm -r $TMP_DIR;

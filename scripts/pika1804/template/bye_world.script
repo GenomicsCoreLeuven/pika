@@ -1,0 +1,94 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	00:05:00
+##[RUN] MEMORY	50gb
+##[RUN] NAME	bye_world
+##[RUN] ACCOUNT	default_project
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	20
+##[VERSION] pika1804
+##[HELP] This is the help of the script. Here comes some information for the user on the script.
+##[HELP] Usually something about the parameters that can be changed inside the script, or about the runtime
+##[HELP] If you use this as a templete, do not forget to change the RUN parameters above. 
+##[HELP] This is an example of a batch script, this needs a test.txt file in the job directory, with some non empty lines (header needed: TEST)
+##
+##[HOWTO] #Here follows the howto. The comment lines should start with #, as the executable lines should start without (like in a bash or sh script).
+##[HOWTO] #Usually there are comments like which module should be loaded before, which data file the script needs, ...
+##[HOWTO] #The pikasub command is:
+##[HOWTO] pikasub bye_world.pbs
+##[HOWTO] #Note that the executable line does not start with #, also in the pipelines and in the tool the ##[HOWTO] will be trimmed.
+
+#loading the modules
+#extra_modules
+##here all needed modules will be loaded, handy on 1 place, easy to find the used versions
+module load parallel
+
+#setting all parameters (these could be changed)
+##here different parameters are set. In the copy of the tool, PROJECT_DIR and GENOME_DIR are automatically changed.
+##SAMPLE_DIR and OUTPUT_DIR can be changed in the pipeline, together with other parameters. It is a good practice to make an environment variable for every possible tool (so that users can edit tool parameters, without having to surf through the code)
+##new parameters are prefereble to have self-explainable names.
+PROJECT_DIR="";
+GENOME_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/input";
+OUTPUT_DIR="$PROJECT_DIR/output";
+SCRATCH_DIR=~;
+NODEFILE="";
+if [ -z "$BATCH_FILE" ];
+then
+        #variable is empty or unset
+        TEST_FILE="$PROJECT_DIR/jobs/test.txt";
+else
+        TEST_FILE=$BATCH_FILE
+fi
+
+
+#the actual script
+##here the actual code of the script is written. There are no limitations to the code itself, as long as it is well documented in the help, howto, and parameters.
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMP_DIR=$SCRATCH_DIR/$JOBID;
+cd $TMP_DIR;
+
+#create the output directory
+mkdir -p $OUTPUT_DIR
+
+#setting parallel environment, needed if the parallelisation is over multiple nodes
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY";
+#end setting parallel environment
+cat $NODEFILE | sort | uniq > nodefile
+
+#This part will generate per line in the test file (without header) a script to place this in a new file
+NR=0
+for LINE in `tail -n +2 $TEST_FILE`;
+do
+	NR=$((NR + 1))
+        echo "
+                cd $TMP_DIR
+		#create a tmp directory
+                TMPDIR=$TMP_DIR
+                TMP_DIR=\`mktemp -d -t tmp.XXXXXXXX\`
+                cd \$TMP_DIR
+
+		#write line to a file
+		echo \"$LINE\" > $TMP_DIR/$NR.txt
+
+		#check if last command is correctly completed
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+        " >> $TMP_DIR/$NR.sh;
+        echo "$TMP_DIR/$NR.sh" >> commands.txt
+done
+
+#since the script is single threaded, 1 script per core can be ran:
+#get the number of cores for this node (mostly all jobs will be executed over exact the same node types)
+CORES=`nproc`
+#This should be set to 1 if 1 job per node has to be executed (needed for heavy resource jobs, or multithreaded jobs)
+
+#this line will launch all created bash scripts parallel (over all nodes)
+cat commands.txt | parallel --sshloginfile nodefile -j $CORES 'sh {} > {}.log 2> {}.err'
+
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
+#copy to the outputdir
+rsync -ahr $TMP_DIR/*/*.txt $OUTPUT_DIR
+
+

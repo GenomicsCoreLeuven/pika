@@ -5,7 +5,7 @@
 ##[RUN] CORES_PER_NODE	20
 ##[RUN] NAME	flash
 ##[RUN] ACCOUNT	default_project
-##[VERSION] pikaDEV
+##[VERSION] pika1804
 ##[HELP] This is a batch script: it uses SAMPLE parameters
 ##[HELP] This tool will merge overlapping reads to 1 (ends with 3 files: R1, R2 of non overlapping, and overlapped reads)
 ##[HELP] This script will use only one cpu per sample
@@ -80,9 +80,6 @@ do
         		rm $SAMPLE.unpaired*;
 		fi
 		rm $SAMPLE.R?.fastq.gz;
-
-		mv $SAMPLE".notCombined_1.fastq.gz" $SAMPLE".R1.fastq.gz";
-                mv $SAMPLE".notCombined_2.fastq.gz" $SAMPLE".R2.fastq.gz";
 
         	rsync -ahr $SAMPLE.* $OUTPUT_DIR/
         	#check if success, else exit

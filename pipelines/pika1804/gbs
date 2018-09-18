@@ -1,7 +1,7 @@
 #GBS pipeline
 
 
-##[VERSION] pikaDEV
+##[VERSION] pika1804
 ##[HELP] The GBS pipeline
 ##[HELP] ================
 ##[HELP] 
@@ -29,7 +29,7 @@ cat ../../raw/*/barcodes.tsv | awk '{print $1}' | sort | uniq >> samples.txt;
 #
 
 ##[JOB] fastq_join
-##[CHANGE] fastq_join	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/gbsx\":"
+##[CHANGE] fastq_join	sed "s:SAMPLE_DIR=\"\$PROJECT_DIR/raw\":SAMPLE_DIR=\"\$PROJECT_DIR/gbx\":"
 
 #Fastqc can be run in parallel with the flash job. With adjustment of the script this can be runed after the flash.
 ##[JOB] fastqc

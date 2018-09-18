@@ -1,0 +1,66 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	6:00:00:00
+##[RUN] MEMORY	240gb
+##[RUN] NODES	1
+##[RUN] CORES_PER_NODE	10
+##[RUN] NAME	canu
+##[RUN] ACCOUNT	default_project
+##[RUN] PARTITION	smp1
+##[VERSION] pika1804
+##[HELP] This tool will assemble pacbio data
+##[HELP] This script is multithreaded
+##[HELP] Runtime of this script is not predicted yet
+##
+##[HOWTO] #CANU
+##[HOWTO] #The parameters in this script has to be edited before ran
+##[HOWTO] #start the module:
+##[HOWTO] pikasub canu.pbs
+#loading the modules
+#extra_modules
+module load canu
+
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/raw";
+OUTPUT_DIR="$PROJECT_DIR/canu";
+SAMPLE="";
+GENOME_SIZE="1.1g";
+SCRATCH_DIR=~;
+MAX_MEM="240";
+MAX_THREADS="10";
+#uncommand for low coverage settings:
+##corMinCoverage: standard 40, set to 0 to get everything (coverage is based on genome size)
+#corMinCoverage="corMinCoverage=40";
+##corOutCoverge: Standard do not use, if uneven coverage or small plasmids set to 400
+#corOutCoverage="corOutCoverage=400";
+##errorRate: standard 0.025, for under 30x use 0.035, above 60x use 0.015
+#errorRate="errorRate=0.025";
+##minReadLength: Standard do not use, for low coverage set to 0
+#minReadLength="minReadLength=0";
+##minOverlapLength: Standard do not use, for low coverage set to 499
+#minOverlapLength="minOverlapLength=499";
+##corMaxEvidenceErate: standard do not use, for low coverage set to 0.3 (limit read correction to only overlaps at or below this fraction error; default: unlimited)
+##contigFilter="minReads minLength singleReadSpan lowCovSpan lowCovDepth", standard: 
+#contigFilter="contigFilter=\"2 1000 0.75 0.75 2\"";
+
+##add all uncommented and changed variables into this one:
+EXTRA_SETTINGS="";
+#EXTRA_SETTINGS="corMinCoverage=2 errorRate=0.035 minOverlapLength=499 corMaxEvidenceErate=0.3";
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMPDIR=$SCRATCH_DIR/$JOBID;
+TMP_DIR=`mktemp -d -t tmp.XXXXXXXX`;
+cd $TMP_DIR;
+
+rsync -ahrL $SAMPLE_DIR/$SAMPLE.fastq.gz pacbio.fastq.gz;
+
+#running CANU
+canu -p $SAMPLE -d $TMP_DIR genomeSize=$GENOME_SIZE usegrid=0 maxMemory=$MAX_MEM maxThreads=$MAX_THREADS $EXTRA_SETTINGS -pacbio-raw $TMP_DIR/pacbio.fastq.gz;
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+rsync -ahrL $TMP_DIR/* .;
+
+rm -r $TMP_DIR;

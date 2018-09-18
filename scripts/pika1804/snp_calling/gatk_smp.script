@@ -1,0 +1,43 @@
+#!/bin/bash -l
+#!/bin/bash -l
+##[RUN] WALLTIME        1:00:00:00
+##[RUN] MEMORY  3200gb
+##[RUN] NODES   14
+##[RUN] CORES_PER_NODE  10
+##[RUN] NAME    gatk
+##[RUN] ACCOUNT default_project
+##[RUN] PARTITION       smp1
+##[VERSION] pika1804
+##[HOWTO] #GATK variant calling
+##[HOWTO] #edit in this script the sample and genome directory
+##[HOWTO] #start the module:
+##[HOWTO] pikasub gatk.pbs
+##
+##[HELP] Options:
+##[HELP] genome: the genome to use (abriviation if known or full path)
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+##[HELP] gatk_options: change the options of the mapper (standard: )
+##[OPTIONS] gatk_options	optional	sed "s:GATK_OPTIONS=\"--genotyping_mode DISCOVERY -stand_emit_conf 10 -stand_call_conf 30\":GATK_OPTIONS=\"value\":g"
+##[HELP] sample: the name of the sample
+##[OPTIONS] sample	mandatory	sed "s:SAMPLE=\"\":SAMPLE=\"value\":g"
+#extra_modules
+module load GATK
+module load parallel
+version_GATK="GATK"
+
+PROJECT_DIR="";
+GENOME_DIR="";
+BAM_DIR="$PROJECT_DIR/mapped";
+GATK_OPTIONS="--genotyping_mode DISCOVERY -stand_emit_conf 10 -stand_call_conf 30";
+OUTPUT_DIR="$PROJECT_DIR/snp_calling/parts";
+SCRATCH_DIR=~;
+PARALLEL_JOBS=14;
+THREADS=20;
+SAMPLE="";
+GATK_OUTPUT_FILE_NAME=$SAMPLE".gatk.vcf";
+
+mkdir -p $OUTPUT_DIR;
+cd $OUTPUT_DIR;
+
+cat $GENOME_DIR/$version_GATK/genome.fa.fai | awk '{print $1}' | parallel -k -j "$PARALLEL_JOBS" java -jar $EBROOTGATK/GenomeAnalysisTK.jar -T HaplotypeCaller -R $GENOME_DIR/$version_GATK/genome.fa -L {} -I $BAM_DIR/$SAMPLE".bam" -o $OUTPUT_DIR"/chr_"{}"."$GATK_OUTPUT_FILE_NAME -nct $THREADS;
+

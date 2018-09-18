@@ -1,0 +1,88 @@
+#!/bin/bash -l
+##[RUN] WALLTIME	2:00:00:00
+##[RUN] MEMORY	120gb
+##[RUN] NODES	2
+##[RUN] CORES_PER_NODE	20
+##[RUN] NAME	sga_preqc
+##[RUN] ACCOUNT	default_project
+##[VERSION] pika1804
+##[HELP] This is a batch script: it uses SAMPLE parameter
+##[HELP] This tool will create a qc report for the input of the assemebly
+##[HELP] This script runs a few houres per sample (depends on the input size)
+##[HELP] The sga_preprocess needs to be ran before this step
+##
+##[HOWTO] #SGA preqc
+##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
+##[HOWTO] #start the module:
+##[HOWTO] pikasub sga_preqc.pbs 
+#
+##Options
+##[HELP] Options:
+##[HELP] genome: this option is used in the epilog. The sga example files should be in ../../sga_preqc_examples/
+##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
+
+#loading the modules
+#extra_modules
+module load SGA
+module load parallel
+#setting all parameters (these could be changed)
+PROJECT_DIR="";
+SAMPLE_DIR="$PROJECT_DIR/sga_preprocess";
+OUTPUT_DIR="$PROJECT_DIR/sga_preqc";
+SCRATCH_DIR="$PROJECT_DIR/tmp/sga_preqc_output";
+
+NODEFILE="";
+if [ -z "$BATCH_FILE" ];
+then
+        #variable is empty or unset
+        SAMPLE_FILE="$PROJECT_DIR/jobs/samples.txt";
+else
+        SAMPLE_FILE=$BATCH_FILE
+fi
+
+
+#the actual script
+JOBID="";
+mkdir -p $SCRATCH_DIR/$JOBID;
+TMP_DIR=$SCRATCH_DIR/$JOBID;
+
+#setting parallel environment
+export PARALLEL="--workdir . --env PATH --env LD_LIBRARY_PATH --env LOADEDMODULES --env _LMFILES_ --env MODULE_VERSION --env MODULEPATH --env MODULEVERSION_STACK --env MODULESHOME --env OMP_DYNAMICS --env OMP_MAX_ACTIVE_LEVELS --env OMP_NESTED --env OMP_NUM_THREADS --env OMP_SCHEDULE --env OMP_STACKSIZE --env OMP_THREAD_LIMIT --env OMP_WAIT_POLICY";
+#end setting parallel environment
+cat $NODEFILE | sort | uniq > nodefile
+
+for SAMPLE in `tail -n +2 $SAMPLE_FILE`;
+do
+        echo "
+                cd $TMP_DIR
+                TMPDIR=$TMP_DIR
+                TMP_DIR=\`mktemp -d -t tmp.XXXXXXXX\`
+                cd \$TMP_DIR
+
+		rsync -ahrL $SAMPLE_DIR/$SAMPLE* .;
+		#check if success, else exit
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+		gunzip *gz;
+
+		THREADS=\`nproc\`
+		sga preqc -t \$THREADS $SAMPLE.sga_readfile.fastq > $SAMPLE.preqc;
+                #check if success, else exit
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+
+		mkdir -p $OUTPUT_DIR;
+		rsync -ahr \$TMP_DIR/$SAMPLE.preqc $OUTPUT_DIR/;
+                #check if success, else exit
+                rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
+
+		rm -rf \$TMP_DIR;
+
+        " >> $TMP_DIR/$SAMPLE.sh;
+        echo "$TMP_DIR/$SAMPLE.sh" >> commands.txt
+done
+
+cat commands.txt | parallel --sshloginfile nodefile -j 1 'sh {} > {}.log 2> {}.err'
+
+rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
+
+

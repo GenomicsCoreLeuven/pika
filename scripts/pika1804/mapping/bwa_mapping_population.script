@@ -1,38 +1,38 @@
 #!/bin/bash -l
 ##[RUN] WALLTIME	12:00:00
 ##[RUN] MEMORY	100gb
-##[RUN] NODES	5
+##[RUN] NODES	1
 ##[RUN] CORES_PER_NODE	20
-##[RUN] NAME	bowtie_mapping_population
+##[RUN] NAME	bwa_mapping_population
 ##[RUN] ACCOUNT	default_project
-##[VERSION] pikaDEV
+##[VERSION] pika1804
 ##[HELP] This is a batch script: it uses SAMPLE parameters
-##[HELP] This tool will map the samples to the reference genome
-##[HELP] This script will use only one cpu
-##[HELP] This script runs only a 2 minute per 1M reads
-##[HELP] The flash parameter needs to be changed
-##[HELP] The genome directory in the prolog file needs to be changed
+##[HELP] This tool will map the reads to the reference genome
+##[HELP] This script will use only one cpu per sample
+##[HELP] This script runs only 2 minutes per 1M reads
+##[HELP] This scripts needs to be edited: change the flash parameter, and the genome directory in the prolog file
 ##
-##[HOWTO] #Bowtie mapping of populations
+##[HOWTO] #BWA mapping for populations
 ##[HOWTO] #Create a data file (samples.txt), with a SAMPLE column
-##[HOWTO] #edit the flash parameter in the pbs, and the genome directory in the prolog
+##[HOWTO] #The script need to be edited: change the flash parameter
+##[HOWTO] #The genome directory in the prolog file will need to be changed
 ##[HOWTO] #start the module:
-##[HOWTO] pikasub bowtie_mapping_population.pbs
+##[HOWTO] pikasub bwa_mapping_population.pbs
 ##
 ##[HELP] Options:
 ##[HELP] genome: the genome to use (abriviation if known or full path)
 ##[OPTIONS] genome	mandatory	sed 's:GENOME_DIR=\"\":GENOME_DIR=\"value\":g'
-##[HELP] bowtie_options: change the options of the mapper (standard: --local)
-##[OPTIONS] bowtie_options	optional	sed "s:BOWTIE_OPTIONS=\"--local\":BOWTIE_OPTIONS=\"value\":g"
+##[HELP] bwa_options: change the options of the mapper (standard: )
+##[OPTIONS] bwa_options	optional	sed "s:BWA_OPTIONS=\"\":BWA_OPTIONS=\"value\":g"
 
 
 #loading the modules
 #extra_modules
-module load Bowtie2
+module load BWA
 module load SAMtools
 module load elprep
 module load parallel
-version_Bowtie2="Bowtie2"
+version_BWA="BWA"
 
 #setting all parameters (these could be changed)
 PROJECT_DIR="";
@@ -43,9 +43,8 @@ OUTPUT_DIR="$PROJECT_DIR/mapped";
 FLASH="NO";
 SCRATCH_DIR=~;
 #This parameter can be changed for multithreaded mapping
-#options can be --local or --end-to-end (more options see bowtie2 manual)
-#local is ideal for genome data, end is ideal for gbs, quantseq, ...
-BOWTIE_OPTIONS="--local";
+THREADS="1";
+BWA_OPTIONS=""
 
 NODEFILE="";
 if [ -z "$BATCH_FILE" ];
@@ -56,11 +55,7 @@ else
         SAMPLE_FILE=$BATCH_FILE
 fi
 
-
 #the actual script
-BOWTIE_GENOME="$GENOME_DIR/$version_Bowtie2/genome";
-
-
 JOBID="";
 mkdir -p $SCRATCH_DIR/$JOBID;
 TMPDIR=$SCRATCH_DIR/$JOBID;
@@ -82,51 +77,47 @@ do
                 mkdir $SAMPLE
                 cd $SAMPLE
                 
-		rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fastq.gz $TMP_DIR/$SAMPLE/;
-		#check if copy success, else exit
+                rsync -ahrL $SAMPLE_DIR/$SAMPLE*.fastq.gz $TMP_DIR/$SAMPLE/;
+                #check if copy success, else exit
                 rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
 
-	
-		gunzip *gz;
-		FASTQ_FILES=\"\";
-		if [ -f $SAMPLE.R2.fastq ];
-		then
-        		#paired end mapping
-        		FASTQ_FILES=\"-1 $TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq -2 $TMP_DIR/$SAMPLE/$SAMPLE.R2.fastq\";
-		else
-        		#single read mapping
-        		FASTQ_FILES=\"$TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq\";
-		fi
+                gunzip *gz;
+                FASTQ_FILES=\"\";
+                if [ -f $SAMPLE.R2.fastq ];
+                then
+                        #paired end mapping
+                        FASTQ_FILES="$TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq $TMP_DIR/$SAMPLE/$SAMPLE.R2.fastq";
+                else
+                        #single read mapping
+                        FASTQ_FILES="$TMP_DIR/$SAMPLE/$SAMPLE.R1.fastq";
+                fi
 
-		THREADS=\`nproc\`
-		bowtie2 -q -p \$THREADS --seed 1 $BOWTIE_OPTIONS --rg-id $SAMPLE --rg ID:$SAMPLE --rg LB:$SAMPLE --rg SM:$SAMPLE --rg PU:$SAMPLE --rg PL:illumina --rg CN:GenomicsCoreLeuven -x $BOWTIE_GENOME \$FASTQ_FILES > /dev/stdout 2> $SAMPLE.bowtie2.log | elprep /dev/stdin $SAMPLE\".bam\" --mark-duplicates --sorting-order coordinate --nr-of-threads \$THREADS;
-		
-		#check if pipe success, else exit		
-		rcs=\${PIPESTATUS[*]}; rc=0; for i in \${rcs}; do rc=\$((\$i > \$rc ? \$i : \$rc)); done; if [[ \$rc != 0 ]]; then exit \$rc; fi
+                THREADS=\`nproc\`
+		BWA_GENOME="$GENOME_DIR/$version_BWA/genome.fa";
 
-		rm *fastq
+		bwa mem -t \$THREADS -M -R "@RG\\tID:$SAMPLE\\tSM:$SAMPLE\\tPL:illumina\\tLB:$SAMPLE\\tPU:$SAMPLE" $BWA_OPTIONS \$BWA_GENOME \$FASTQ_FILES | elprep /dev/stdin $SAMPLE\".bam\" --mark-duplicates --sorting-order coordinate --nr-of-threads \$THREADS;
+                
+                #check if pipe success, else exit               
+                rcs=\${PIPESTATUS[*]}; rc=0; for i in \${rcs}; do rc=\$((\$i > \$rc ? \$i : \$rc)); done; if [[ \$rc != 0 ]]; then exit \$rc; fi
 
-		samtools index -b $SAMPLE".bam";
-		#check if samtools success, else exit
+                rm *fastq
+                samtools index -b $SAMPLE".bam";
+                #check if samtools success, else exit
                 rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
 
-
-		mkdir -p $OUTPUT_DIR
-		rsync -ahr $SAMPLE* $OUTPUT_DIR/
-		#check if copy success, else exit
+                mkdir -p $OUTPUT_DIR
+                rsync -ahr $SAMPLE* $OUTPUT_DIR/
+                #check if copy success, else exit
                 rc=\$?; if [[ \$rc != 0 ]]; then exit \$rc; fi
-		
-		rm -r $TMP_DIR/$SAMPLE
-
+                
+                rm -r $TMP_DIR/$SAMPLE
         " >> $TMP_DIR/$SAMPLE.sh;
         echo "$TMP_DIR/$SAMPLE.sh" >> commands.txt
 done
 
+
 cat commands.txt | parallel --sshloginfile nodefile -j "$PARALLEL_JOBS" 'sh {} > {}.log 2> {}.err'
 
 rc=$?; if [[ $rc != 0 ]]; then exit $rc; fi
-
-
-
 
 
